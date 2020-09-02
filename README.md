@@ -17,6 +17,10 @@ After saving the bridge config to a file such as "bridge.cfg", if you want to st
 $ java -jar ProtocolWhisperer.jar -bridge bridge.cfg
 ```
 
+## Quickstart
+
+Download & extract the [latest release](#latest-release) and double click ProtocolWhisperer.jar.
+
 ## Dependencies
 
 This project depends on the JLibModbus library and EtherIP for CIP functionality.
@@ -28,6 +32,10 @@ https://github.com/EPICSTools/etherip
 ## Building from source
 
 This is a NetBeans project. It can be built by pulling it in the NetBeans IDE or manually compiling. The project requires the JLibModbus and EtherIP jars.
+
+## Latest release
+
+[ProtocolWhisperer.v0.1.zip](https://github.com/SciFiDryer/ProtocolWhisperer/releases/download/v0.1/ProtocolWhisperer.v0.1.zip)
 
 ## Completed features and planned features
 
