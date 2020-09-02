@@ -1,0 +1,9 @@
+The libraries used in this application carry different licenses.
+
+JLibModbus Library
+
+This program is covered with the Apache 2.0 license, the same license provided with ProtocolWhisperer. The source code of this program can be downloaded from https://github.com/kochedykov/jlibmodbus.
+
+EtherIP Library
+
+This program is covered with the Eclipse Public License 1.0. The source code of this program can be downloaded from https://github.com/EPICSTools/etherip.
