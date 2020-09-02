@@ -35,3 +35,4 @@ This is a NetBeans project. It can be built by pulling it in the NetBeans IDE or
 - [ ] Plugins for other protocols
 - [ ] Data logger
 - [ ] Visual trending of data
+- [ ] Scripting of collected data
