@@ -31,7 +31,7 @@ This is a NetBeans project. It can be built by pulling it in the NetBeans IDE or
 
 ## Completed features and planned features
 
-[x] Protocol conversion
-[ ] Plugins for other protocols
-[ ] Data logger
-[ ] Visual trending of data
+- [x] Protocol conversion
+- [ ] Plugins for other protocols
+- [ ] Data logger
+- [ ] Visual trending of data
