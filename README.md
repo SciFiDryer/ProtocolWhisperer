@@ -14,7 +14,7 @@ The data is updated followed by a rest period specified in the bridge. If 1000ms
 
 After saving the bridge config to a file such as "bridge.cfg", if you want to start a headless instance of the bridge use the following command:
 ```
-$ java -jar ModbusMechanic.jar -bridge bridge.cfg
+$ java -jar ProtocolWhisperer.jar -bridge bridge.cfg
 ```
 
 ## Dependencies
