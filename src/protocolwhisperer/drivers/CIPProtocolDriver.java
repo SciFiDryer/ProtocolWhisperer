@@ -50,11 +50,11 @@ public class CIPProtocolDriver implements ProtocolDriver{
     public void buildIncomingHostTable()
     {
         incomingHostList.clear();
-        for (int i = 0; i < manager.mappingRecords.size(); i++)
+        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
         {
-            if (manager.mappingRecords.get(i).incomingRecord instanceof CIPProtocolRecord)
+            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.mappingRecords.get(i).incomingRecord;
+                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
                 addToHostList(incomingHostList, currentRecord);
             }
         }
@@ -62,11 +62,11 @@ public class CIPProtocolDriver implements ProtocolDriver{
     public void buildOutgoingHostTable()
     {
         outgoingHostList.clear();
-        for (int i = 0; i < manager.mappingRecords.size(); i++)
+        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
         {
-            if (manager.mappingRecords.get(i).outgoingRecord instanceof CIPProtocolRecord)
+            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.mappingRecords.get(i).outgoingRecord;
+                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
                 addToHostList(outgoingHostList, currentRecord);
             }
         }
@@ -144,11 +144,11 @@ public class CIPProtocolDriver implements ProtocolDriver{
         {
             incomingHostList.get(i).values = CIPReadTags(incomingHostList.get(i));
         }
-        for (int i = 0; i < manager.mappingRecords.size(); i++)
+        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
         {
-            if (manager.mappingRecords.get(i).incomingRecord instanceof CIPProtocolRecord)
+            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.mappingRecords.get(i).incomingRecord;
+                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
                 for (int j = 0; j < incomingHostList.size(); j++)
                 {
                     if (currentRecord.host.equals(incomingHostList.get(j).host) && currentRecord.port == incomingHostList.get(j).port && currentRecord.slot == incomingHostList.get(j).slot)
@@ -176,11 +176,11 @@ public class CIPProtocolDriver implements ProtocolDriver{
     public void sendOutgoingRecords()
     {
         
-        for (int i = 0; i < manager.mappingRecords.size(); i++)
+        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
         {
-            if (manager.mappingRecords.get(i).outgoingRecord instanceof CIPProtocolRecord)
+            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.mappingRecords.get(i).outgoingRecord;
+                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
                 for (int j = 0; j < outgoingHostList.size(); j++)
                 {
                     if (currentRecord.host.equals(outgoingHostList.get(j).host) && currentRecord.port == outgoingHostList.get(j).port && currentRecord.slot == outgoingHostList.get(j).slot)

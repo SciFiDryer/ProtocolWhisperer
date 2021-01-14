@@ -55,7 +55,7 @@ public class CIPProtocolHandler implements ProtocolHandler{
     {
         return incomingPanelReady;
     }
-    public void buildProtocolPane(int paneType, String selectedItem)
+    public JTable buildProtocolPane(int paneType, String selectedItem)
     {
         if (paneType == PANE_TYPE_INCOMING)
         {
@@ -69,9 +69,10 @@ public class CIPProtocolHandler implements ProtocolHandler{
         {
             resetOutgoingPanel();
         }*/
+        return null;
     }
     public void constructIncomingDataSettings(JPanel mainPanel, String selectedItem)
-    {
+    {/*
         if (parentEntryContainer.incomingSettings.size() < 2)
         {
             parentEntryContainer.incomingSettings.add(new ArrayList());
@@ -113,10 +114,10 @@ public class CIPProtocolHandler implements ProtocolHandler{
         
         incomingPanelReady = true;
         dmh.constructOutgoingDataMenu(false);
-        parentFrame.pack();
+        parentFrame.pack();*/
     }
     public void constructOutgoingDataSettings(JPanel mainPanel, String selectedItem)
-    {
+    {/*
         mainPanel.removeAll();
         dmh.constructOutgoingDataMenu(true);
         if (parentEntryContainer.outgoingSettings.size() < 2)
@@ -156,10 +157,10 @@ public class CIPProtocolHandler implements ProtocolHandler{
             settings.add(writeTagField);
             settings.add(slotField);
         }
-        parentFrame.pack();
+        parentFrame.pack();*/
     }
-    public void setIncomingSettings(ProtocolRecord protocolRecord)
-    {
+    public void setIncomingSettings(JTable table, ProtocolRecord protocolRecord)
+    {/*
         CIPProtocolRecord currentRecord = (CIPProtocolRecord)protocolRecord;
         ArrayList currentLevel = null;
         JComboBox incomingMenu = (JComboBox)parentEntryContainer.incomingSettings.get(0).get(0);
@@ -175,10 +176,10 @@ public class CIPProtocolHandler implements ProtocolHandler{
         ((JTextField)(currentLevel.get(0))).setText(currentRecord.host);
         ((JTextField)(currentLevel.get(1))).setText(currentRecord.port + "");
         ((JTextField)(currentLevel.get(2))).setText(currentRecord.tag);
-        ((JTextField)(currentLevel.get(3))).setText(currentRecord.slot + "");
+        ((JTextField)(currentLevel.get(3))).setText(currentRecord.slot + "");*/
     }
     public void setOutgoingSettings(ProtocolRecord protocolRecord)
-    {
+    {/*
         CIPProtocolRecord currentRecord = (CIPProtocolRecord)protocolRecord;
         ArrayList currentLevel = null;
         JComboBox outgoingMenu = (JComboBox)parentEntryContainer.outgoingSettings.get(0).get(0);
@@ -194,10 +195,10 @@ public class CIPProtocolHandler implements ProtocolHandler{
         ((JTextField)(currentLevel.get(0))).setText(currentRecord.host);
         ((JTextField)(currentLevel.get(1))).setText(currentRecord.port + "");
         ((JTextField)(currentLevel.get(2))).setText(currentRecord.tag);
-        ((JTextField)(currentLevel.get(3))).setText(currentRecord.slot + "");
+        ((JTextField)(currentLevel.get(3))).setText(currentRecord.slot + "");*/
     }
-    public ProtocolRecord getIncomingProtocolRecord()
-    {
+    public ProtocolRecord getIncomingProtocolRecord(BridgeEntryContainer container)
+    {/*
         ProtocolRecord incomingProtocolRecord = null;
         //first container
         ArrayList currentLevel = parentEntryContainer.incomingSettings.get(0);
@@ -217,10 +218,11 @@ public class CIPProtocolHandler implements ProtocolHandler{
             slot = Integer.parseInt(((JTextField)(currentLevel.get(3))).getText());
         }
         incomingProtocolRecord = new CIPProtocolRecord(type, host, port, slot, tag);
-        return incomingProtocolRecord;
+        return incomingProtocolRecord;*/
+        return null;
     }
-    public ProtocolRecord getOutgoingProtocolRecord(ProtocolRecord incomingRecord)
-    {
+    public ProtocolRecord getOutgoingProtocolRecord(BridgeEntryContainer container)
+    {/*
         ProtocolRecord outgoingProtocolRecord = null;
         //first container
         ArrayList currentLevel = parentEntryContainer.outgoingSettings.get(0);
@@ -240,6 +242,7 @@ public class CIPProtocolHandler implements ProtocolHandler{
             slot = Integer.parseInt(((JTextField)(currentLevel.get(3))).getText());
         }
         outgoingProtocolRecord = new CIPProtocolRecord(type, host, port, slot, tag);
-        return outgoingProtocolRecord;
+        return outgoingProtocolRecord;*/
+        return null;
     }
 }

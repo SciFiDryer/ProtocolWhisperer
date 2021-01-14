@@ -21,10 +21,14 @@ import java.util.*;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class BridgeEntryContainer {
-    public ProtocolHandler incomingHandler = null;
-    public ProtocolHandler outgoingHandler = null;
-    public ArrayList<ArrayList> incomingSettings = new ArrayList();
-    public ArrayList<ArrayList> outgoingSettings = new ArrayList();
-    
+public class BridgeEntryContainer implements java.io.Serializable{
+    public String driverSelection = null;
+    public String uuid = null;
+    public javax.swing.JTable table = null;
+    public BridgeEntryContainer(String aDriverSelection, javax.swing.JTable aTable)
+    {
+        driverSelection = aDriverSelection;
+        table = aTable;
+        uuid = uuid = java.util.UUID.randomUUID().toString();
+    }
 }

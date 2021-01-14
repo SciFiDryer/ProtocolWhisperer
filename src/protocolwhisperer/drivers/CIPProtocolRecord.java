@@ -19,7 +19,7 @@ package protocolwhisperer.drivers;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class CIPProtocolRecord implements ProtocolRecord {
+public class CIPProtocolRecord extends ProtocolRecord {
     public static int PROTOCOL_TYPE_CIP_READ = 1;
     public static int PROTOCOL_TYPE_CIP_WRITE = 2;
     public int type = 0;

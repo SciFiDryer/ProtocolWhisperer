@@ -20,7 +20,7 @@ import com.intelligt.modbus.jlibmodbus.utils.DataUtils;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class ModbusProtocolRecord implements ProtocolRecord {
+public class ModbusProtocolRecord extends ProtocolRecord {
     int formatType = 0;
     int protocolType = 0;
     public byte[] rawValue = null;
@@ -39,8 +39,10 @@ public class ModbusProtocolRecord implements ProtocolRecord {
     public static int HOLDING_REGISTER_FUNCTION = 3;
     public boolean wordSwap = false;
     public boolean byteSwap = false;
-    public ModbusProtocolRecord(int protocol, String host, int port, int format, int aFunctionCode, int aStartingRegister, int aQuantity, boolean aWordSwap, boolean aByteSwap)
+    public int node = 0;
+    public ModbusProtocolRecord(String aTag, int protocol, String host, int port, int aNode, int format, int aFunctionCode, int aStartingRegister, int aQuantity, boolean aWordSwap, boolean aByteSwap)
     {
+        tag = aTag;
         protocolType = protocol;
         slaveHost = host;
         slavePort = port;
@@ -50,6 +52,7 @@ public class ModbusProtocolRecord implements ProtocolRecord {
         functionCode = aFunctionCode;
         byteSwap = aByteSwap;
         wordSwap = aWordSwap;
+        node = aNode;
     }
     public ModbusProtocolRecord()
     {

@@ -16,6 +16,8 @@
 
 package protocolwhisperer;
 
+import com.intelligt.modbus.jlibmodbus.Modbus;
+
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
@@ -35,6 +37,7 @@ public class ProtocolWhisperer {
                 if (args[i].equals("-debug"))
                 {
                     debug = true;
+                    Modbus.setLogLevel(Modbus.LogLevel.LEVEL_DEBUG);
                 }
                 if (args[i].equals("-bridge"))
                 {

@@ -23,16 +23,20 @@ import com.intelligt.modbus.jlibmodbus.slave.*;
 public class ModbusHostRecord {
     String hostname = null;
     int port = 0;
+    int node = 0;
     ArrayList<RegisterRecord> registerRecords = new ArrayList();
     int hostType = 0;
     static int HOST_TYPE_REMOTE_SLAVE = 1;
     static int HOST_TYPE_LOCAL_SLAVE = 2;
+    
     ModbusSlave localSlave = null;
-    public ModbusHostRecord(int aHostType, String aHostname, int aPort)
+    
+    public ModbusHostRecord(int aHostType, String aHostname, int aPort, int aNode)
     {
         hostType = aHostType;
         hostname = aHostname;
         port = aPort;
+        node = aNode;
     }
     public void insertRegisterValue(int functionCode, int register, byte[] value)
     {

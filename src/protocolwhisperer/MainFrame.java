@@ -32,10 +32,17 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form BridgeFrame
      */
     BridgeManager manager = null;
-    
+    JComboBox incomingDataSelector = null;
+    JComboBox outgoingDataSelector = null;
     public MainFrame(BridgeManager aManager) {
         manager = aManager;
         initComponents();
+        incomingDataSelector = new JComboBox();
+        outgoingDataSelector = new JComboBox();
+        incomingDataSelectorPane.add(incomingDataSelector);
+        outgoingDataSelectorPane.add(outgoingDataSelector);
+        protocolwhisperer.drivers.DriverMenuHandler dmh = new protocolwhisperer.drivers.DriverMenuHandler(incomingDataSelector, outgoingDataSelector, this, incomingDataPane, outgoingDataPane);
+        manager.dmh = dmh;
     }
     public MainFrame()
     {
@@ -58,15 +65,36 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        generalPane = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
-        addMappingButton = new javax.swing.JButton();
         startBridgeButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         restIntervalField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        incomingTabPane = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
         jPanel2 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        incomingDataSelectorPane = new javax.swing.JPanel();
+        addDataSource = new javax.swing.JButton();
+        incomingDataParent = new javax.swing.JPanel();
+        incomingDataPane = new javax.swing.JPanel();
+        topAlignmentSpace = new javax.swing.JPanel();
+        outgoingTabPane = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        outgoingDataPaneParent = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        outgoingDataSelectorPane = new javax.swing.JPanel();
+        addDataDestination = new javax.swing.JButton();
+        outgoingDataPane = new javax.swing.JPanel();
+        viewSourcesPane = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        valuesTable = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         saveConfig = new javax.swing.JMenuItem();
@@ -80,15 +108,9 @@ public class MainFrame extends javax.swing.JFrame {
         });
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
-        jPanel1.add(jSeparator1);
+        generalPane.setLayout(new javax.swing.BoxLayout(generalPane, javax.swing.BoxLayout.Y_AXIS));
 
-        addMappingButton.setText("Add mapping");
-        addMappingButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addMappingButtonActionPerformed(evt);
-            }
-        });
-        jPanel1.add(addMappingButton);
+        jPanel1.add(jSeparator1);
 
         startBridgeButton.setText("Start Bridge");
         startBridgeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -98,7 +120,7 @@ public class MainFrame extends javax.swing.JFrame {
         });
         jPanel1.add(startBridgeButton);
 
-        getContentPane().add(jPanel1);
+        generalPane.add(jPanel1);
 
         jLabel2.setText("Rest interval");
         jPanel3.add(jLabel2);
@@ -110,10 +132,94 @@ public class MainFrame extends javax.swing.JFrame {
         jLabel1.setText("ms");
         jPanel3.add(jLabel1);
 
-        getContentPane().add(jPanel3);
+        generalPane.add(jPanel3);
+
+        jTabbedPane1.addTab("General", generalPane);
+
+        incomingTabPane.setLayout(new javax.swing.BoxLayout(incomingTabPane, javax.swing.BoxLayout.Y_AXIS));
 
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.Y_AXIS));
-        getContentPane().add(jPanel2);
+
+        jLabel3.setText("Driver");
+        jPanel4.add(jLabel3);
+        jPanel4.add(incomingDataSelectorPane);
+
+        addDataSource.setText("Add");
+        addDataSource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addDataSourceActionPerformed(evt);
+            }
+        });
+        jPanel4.add(addDataSource);
+
+        jPanel2.add(jPanel4);
+
+        incomingDataParent.setLayout(new javax.swing.BoxLayout(incomingDataParent, javax.swing.BoxLayout.Y_AXIS));
+
+        incomingDataPane.setLayout(new javax.swing.BoxLayout(incomingDataPane, javax.swing.BoxLayout.Y_AXIS));
+        incomingDataParent.add(incomingDataPane);
+
+        topAlignmentSpace.setLayout(new java.awt.BorderLayout());
+        incomingDataParent.add(topAlignmentSpace);
+
+        jPanel2.add(incomingDataParent);
+
+        jScrollPane1.setViewportView(jPanel2);
+
+        incomingTabPane.add(jScrollPane1);
+
+        jTabbedPane1.addTab("Data Sources", incomingTabPane);
+
+        outgoingTabPane.setLayout(new javax.swing.BoxLayout(outgoingTabPane, javax.swing.BoxLayout.LINE_AXIS));
+
+        outgoingDataPaneParent.setLayout(new javax.swing.BoxLayout(outgoingDataPaneParent, javax.swing.BoxLayout.Y_AXIS));
+
+        jLabel4.setText("Driver");
+        jPanel5.add(jLabel4);
+        jPanel5.add(outgoingDataSelectorPane);
+
+        addDataDestination.setText("Add");
+        addDataDestination.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addDataDestinationActionPerformed(evt);
+            }
+        });
+        jPanel5.add(addDataDestination);
+
+        outgoingDataPaneParent.add(jPanel5);
+
+        outgoingDataPane.setLayout(new javax.swing.BoxLayout(outgoingDataPane, javax.swing.BoxLayout.Y_AXIS));
+        outgoingDataPaneParent.add(outgoingDataPane);
+
+        jScrollPane2.setViewportView(outgoingDataPaneParent);
+
+        outgoingTabPane.add(jScrollPane2);
+
+        jTabbedPane1.addTab("Data Destinations", outgoingTabPane);
+
+        valuesTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tag", "Value"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane3.setViewportView(valuesTable);
+
+        viewSourcesPane.add(jScrollPane3);
+
+        jTabbedPane1.addTab("View Source Values", viewSourcesPane);
+
+        getContentPane().add(jTabbedPane1);
 
         jMenu1.setText("File");
 
@@ -137,12 +243,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         setJMenuBar(jMenuBar1);
 
-        pack();
+        setBounds(0, 0, 838, 339);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void addMappingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMappingButtonActionPerformed
-        addMapping();
-    }//GEN-LAST:event_addMappingButtonActionPerformed
 
     public void addMapping()
     {
@@ -153,8 +255,8 @@ public class MainFrame extends javax.swing.JFrame {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
         
         incomingPanel.setLayout(new BoxLayout(incomingPanel, BoxLayout.Y_AXIS));
-        JComboBox incomingDataSelector = new JComboBox();
-        JComboBox outgoingDataSelector = new JComboBox();
+        
+        
         
         
         JPanel incomingDataSource = new JPanel();
@@ -163,18 +265,17 @@ public class MainFrame extends javax.swing.JFrame {
         
         JLabel incomingDataLabel = new JLabel("Incoming Data Source");
         incomingDataSource.add(incomingDataLabel);
-        incomingDataSource.add(incomingDataSelector);
+        //incomingDataSource.add(incomingDataSelector);
         incomingPanel.add(incomingDataSource);
         incomingPanel.add(incomingDataSettings);
         
         outgoingPanel.setLayout(new BoxLayout(outgoingPanel, BoxLayout.Y_AXIS));
-        BridgeEntryContainer entryContainer = new BridgeEntryContainer();
-        entryContainer.incomingSettings.add(new ArrayList());
-        entryContainer.incomingSettings.get(0).add(incomingDataSelector);
-        protocolwhisperer.drivers.DriverMenuHandler dmh = new protocolwhisperer.drivers.DriverMenuHandler(incomingDataSelector, outgoingDataSelector, this, entryContainer, incomingDataSettings, outgoingPanel);
-        incomingDataSelector.addActionListener(dmh);
-        manager.bridgeMapList.add(entryContainer);
-        manager.dmh = dmh;
+        
+        //entryContainer.incomingSettings.get(0).add(incomingDataSelector);
+        
+        
+        //manager.bridgeMapList.add(entryContainer);
+        
         
         
         mainPanel.add(incomingPanel);
@@ -186,12 +287,12 @@ public class MainFrame extends javax.swing.JFrame {
         deleteButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
-                jPanel2.remove(mainPanel);
-                manager.bridgeMapList.remove(entryContainer);
+                incomingTabPane.remove(mainPanel);
+                //manager.bridgeMapList.remove(entryContainer);
                 pack();
             }
         });
-        jPanel2.add(mainPanel);
+        incomingTabPane.add(mainPanel);
         pack();
     }
     private void startBridgeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBridgeButtonActionPerformed
@@ -244,7 +345,7 @@ public class MainFrame extends javax.swing.JFrame {
             {
                 XMLEncoder xmle = new XMLEncoder(new FileOutputStream(f));
                 manager.constructSettingsFromGui();
-                xmle.writeObject(manager.mappingRecords);
+                xmle.writeObject(manager.dataSourceRecords);
                 xmle.close();
             }
             catch (Exception e)
@@ -273,7 +374,7 @@ public class MainFrame extends javax.swing.JFrame {
             try
             {
                 XMLDecoder xmld = new XMLDecoder(new FileInputStream(f));
-                manager.mappingRecords = (ArrayList<BridgeMappingRecord>)xmld.readObject();
+                manager.dataSourceRecords = (ArrayList<protocolwhisperer.drivers.ProtocolRecord>)xmld.readObject();
                 xmld.close();
                 manager.restoreGuiFromFile();
             }
@@ -287,24 +388,53 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_loadConfigActionPerformed
 
+    private void addDataSourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDataSourceActionPerformed
+        manager.dmh.dispatchDriverEvent(protocolwhisperer.drivers.ProtocolHandler.PANE_TYPE_INCOMING, incomingDataSelector.getSelectedItem().toString());
+    }//GEN-LAST:event_addDataSourceActionPerformed
+
+    private void addDataDestinationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDataDestinationActionPerformed
+        manager.dmh.dispatchDriverEvent(protocolwhisperer.drivers.ProtocolHandler.PANE_TYPE_OUTGOING, outgoingDataSelector.getSelectedItem().toString());
+    }//GEN-LAST:event_addDataDestinationActionPerformed
+
     /**
      * @param args the command line arguments
      */
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addMappingButton;
+    private javax.swing.JButton addDataDestination;
+    private javax.swing.JButton addDataSource;
+    private javax.swing.JPanel generalPane;
+    private javax.swing.JPanel incomingDataPane;
+    private javax.swing.JPanel incomingDataParent;
+    private javax.swing.JPanel incomingDataSelectorPane;
+    private javax.swing.JPanel incomingTabPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JMenuItem loadConfig;
+    private javax.swing.JPanel outgoingDataPane;
+    private javax.swing.JPanel outgoingDataPaneParent;
+    private javax.swing.JPanel outgoingDataSelectorPane;
+    private javax.swing.JPanel outgoingTabPane;
     private javax.swing.JTextField restIntervalField;
     private javax.swing.JMenuItem saveConfig;
     private javax.swing.JButton startBridgeButton;
+    private javax.swing.JPanel topAlignmentSpace;
+    public javax.swing.JTable valuesTable;
+    private javax.swing.JPanel viewSourcesPane;
     // End of variables declaration//GEN-END:variables
 }

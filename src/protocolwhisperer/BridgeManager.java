@@ -31,8 +31,10 @@ import javax.swing.*;
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
 public class BridgeManager{
-    public ArrayList<BridgeEntryContainer> bridgeMapList = new ArrayList();
-    public ArrayList<BridgeMappingRecord> mappingRecords = new ArrayList();
+    public ArrayList<BridgeEntryContainer> dataSourceList = new ArrayList();
+    public ArrayList<ProtocolRecord> dataSourceRecords = new ArrayList();
+    public ArrayList<BridgeEntryContainer> dataDestinationList = new ArrayList();
+    public ArrayList<ProtocolRecord> dataDestinationRecords = new ArrayList();
     ArrayList<ProtocolDriver> driverList = new ArrayList();
     boolean firstRun = true;
     int restTime = 1000;
@@ -40,8 +42,10 @@ public class BridgeManager{
     BridgeThread bridgeThread = null;
     public DriverMenuHandler dmh = null;
     MainFrame bridgeFrame = null;
-    public BridgeManager(boolean headless, String fileName)
+    boolean headless = false;
+    public BridgeManager(boolean aHeadless, String fileName)
     {
+        headless = aHeadless;
         if (!headless)
         {
             try
@@ -87,7 +91,7 @@ public class BridgeManager{
         try
         {
             XMLDecoder xmld = new XMLDecoder(new FileInputStream(fileName));
-            mappingRecords = (ArrayList<BridgeMappingRecord>)xmld.readObject();
+            dataSourceRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
             xmld.close();
         }
         catch (Exception e)
@@ -100,19 +104,19 @@ public class BridgeManager{
     }
     public void setBridgeMapList(ArrayList aBridgeMapList)
     {
-        bridgeMapList = aBridgeMapList;
+        dataSourceList = aBridgeMapList;
     }
-    public ArrayList<BridgeMappingRecord> getMappingRecords()
+    public ArrayList<ProtocolRecord> getDataSourceRecords()
     {
-        return mappingRecords;
+        return dataSourceRecords;
     }
     public void setMappingRecords(ArrayList aMappingRecords)
     {
-        mappingRecords = aMappingRecords;
+        dataSourceRecords = aMappingRecords;
     }
     public ArrayList<BridgeEntryContainer> getBridgeMapList()
     {
-        return bridgeMapList;
+        return dataSourceList;
     }
     public void setDriverList(ArrayList aDriverList)
     {
@@ -138,19 +142,35 @@ public class BridgeManager{
             ProtocolDriver currentDriver = driverList.get(i);
             currentDriver.getIncomingRecords();
         }
+        if (!headless)
+        {
+            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel)bridgeFrame.valuesTable.getModel();
+            while (model.getRowCount() > 0)
+            {
+                model.removeRow(0);
+            }
+            for (int i = 0; i < dataSourceRecords.size(); i++)
+            {
+                ProtocolRecord pr = dataSourceRecords.get(i);
+                model.addRow(new Object[] {pr.getTag(), pr.getValue()});
+            }
+            
+        }
         //get incoming records
         for (int i = 0; i < driverList.size(); i++)
         {
             ProtocolDriver currentDriver = driverList.get(i);
             currentDriver.mapIncomingValues();
         }
-        //set outgoing records
-        for (int i = 0; i < mappingRecords.size(); i++)
+        for (int i = 0; i < dataDestinationRecords.size(); i++)
         {
-            BridgeMappingRecord currentRecord = mappingRecords.get(i);
-            currentRecord.outgoingRecord.setValue(currentRecord.incomingRecord.getValue());
+            ProtocolRecord currentRecord = dataDestinationRecords.get(i);
+            ProtocolRecord incomingRecord = getIncomingRecordByTag(currentRecord.getTag());
+            if (incomingRecord != null)
+            {
+                currentRecord.setValue(incomingRecord.getValue());
+            }
         }
-        //map records
         for (int i = 0; i < driverList.size(); i++)
         {
             ProtocolDriver currentDriver = driverList.get(i);
@@ -158,70 +178,103 @@ public class BridgeManager{
         }
         firstRun = false;
     }
+    public ProtocolRecord getIncomingRecordByTag(String tag)
+    {
+        for (int i = 0; i < dataSourceRecords.size(); i++)
+        {
+            if (dataSourceRecords.get(i).getTag().equals(tag))
+            {
+                return dataSourceRecords.get(i);
+            }
+        }
+        return null;
+    }
     public void restoreGuiFromFile()
     {
-        for (int i = 0; i < mappingRecords.size(); i++)
+        for (int i = 0; i < dataSourceRecords.size(); i++)
         {
-            if (mappingRecords.get(i).incomingRecord instanceof ModbusProtocolRecord)
+            if (dataSourceRecords.get(i) instanceof ModbusProtocolRecord)
             {
-                bridgeFrame.addMapping();
+                JTable table = dmh.dispatchDriverEvent(protocolwhisperer.drivers.ProtocolHandler.PANE_TYPE_INCOMING, "From Modbus Slave (act as master)");
                 for (int j = 0; j < dmh.getDriverList().size(); j++)
                 {
                     if (dmh.getDriverList().get(j) instanceof ModbusProtocolHandler)
                     {
-                        ((ModbusProtocolHandler)(dmh.getDriverList().get(j))).setIncomingSettings((ModbusProtocolRecord)mappingRecords.get(i).incomingRecord);
+                        ((ModbusProtocolHandler)(dmh.getDriverList().get(j))).setIncomingSettings(table, (ModbusProtocolRecord)dataSourceRecords.get(i));
                     }
                 }
             }
-            if (mappingRecords.get(i).incomingRecord instanceof CIPProtocolRecord)
+            /*
+            if (dataSourceRecords.get(i).incomingRecord instanceof CIPProtocolRecord)
             {
                 bridgeFrame.addMapping();
                 for (int j = 0; j < dmh.getDriverList().size(); j++)
                 {
                     if (dmh.getDriverList().get(j) instanceof CIPProtocolHandler)
                     {
-                        ((CIPProtocolHandler)(dmh.getDriverList().get(j))).setIncomingSettings((CIPProtocolRecord)mappingRecords.get(i).incomingRecord);
+                        ((CIPProtocolHandler)(dmh.getDriverList().get(j))).setIncomingSettings((CIPProtocolRecord)dataSourceRecords.get(i).incomingRecord);
                     }
                 }
             }
-            if (mappingRecords.get(i).outgoingRecord instanceof ModbusProtocolRecord)
+            if (dataSourceRecords.get(i).outgoingRecord instanceof ModbusProtocolRecord)
             {
                 for (int j = 0; j < dmh.getDriverList().size(); j++)
                 {
                     if (dmh.getDriverList().get(j) instanceof ModbusProtocolHandler)
                     {
-                        ((ModbusProtocolHandler)(dmh.getDriverList().get(j))).setOutgoingSettings((ModbusProtocolRecord)mappingRecords.get(i).outgoingRecord);
+                        ((ModbusProtocolHandler)(dmh.getDriverList().get(j))).setOutgoingSettings((ModbusProtocolRecord)dataSourceRecords.get(i).outgoingRecord);
                     }
                 }
             }
-            if (mappingRecords.get(i).outgoingRecord instanceof CIPProtocolRecord)
+            if (dataSourceRecords.get(i).outgoingRecord instanceof CIPProtocolRecord)
             {
                 for (int j = 0; j < dmh.getDriverList().size(); j++)
                 {
                     if (dmh.getDriverList().get(j) instanceof CIPProtocolHandler)
                     {
-                        ((CIPProtocolHandler)(dmh.getDriverList().get(j))).setOutgoingSettings((CIPProtocolRecord)mappingRecords.get(i).outgoingRecord);
+                        ((CIPProtocolHandler)(dmh.getDriverList().get(j))).setOutgoingSettings((CIPProtocolRecord)dataSourceRecords.get(i).outgoingRecord);
                     }
+                }
+            }*/
+        }
+    }
+    public ProtocolHandler getHandlerForDriver(String driverSelection)
+    {
+        for (int i = 0; i < dmh.getDriverList().size(); i++)
+        {
+            ProtocolHandler currentHandler = dmh.getDriverList().get(i);
+            String[] menuNames = currentHandler.getIncomingMenuNames();
+            for (int j = 0; j < menuNames.length; j++)
+            {
+                if (driverSelection.equals(menuNames[j]))
+                {
+                    return currentHandler;
+                }
+            }
+            menuNames = currentHandler.getOutgoingMenuNames();
+            for (int j = 0; j < menuNames.length; j++)
+            {
+                if (driverSelection.equals(menuNames[j]))
+                {
+                    return currentHandler;
                 }
             }
         }
+        return null;
     }
     public void constructSettingsFromGui()
     {
-        mappingRecords.clear();
-        for (int i = 0; i < bridgeMapList.size(); i++)
+        dataSourceRecords.clear();
+        for (int i = 0; i < dataSourceList.size(); i++)
         {
-            ProtocolRecord incomingRecord = bridgeMapList.get(i).incomingHandler.getIncomingProtocolRecord();
-            ProtocolRecord outgoingRecord = bridgeMapList.get(i).outgoingHandler.getOutgoingProtocolRecord(incomingRecord);            
-            BridgeMappingRecord bmr = new BridgeMappingRecord(incomingRecord, outgoingRecord);
-            if (incomingRecord instanceof ModbusProtocolRecord && outgoingRecord instanceof ModbusProtocolRecord)
-            {
-                if (((ModbusProtocolRecord)(incomingRecord)).getFormatType() == ModbusProtocolRecord.FORMAT_TYPE_RAW && ((ModbusProtocolRecord)(outgoingRecord)).getFormatType() == ModbusProtocolRecord.FORMAT_TYPE_RAW)
-                {
-                    bmr.modbusBlockRemap = true;
-                }
-            }
-            mappingRecords.add(bmr);
+            ProtocolRecord pr = getHandlerForDriver(dataSourceList.get(i).driverSelection).getIncomingProtocolRecord(dataSourceList.get(i));
+            dataSourceRecords.add(pr);
+        }
+        dataDestinationRecords.clear();
+        for (int i = 0; i < dataDestinationList.size(); i++)
+        {
+            ProtocolRecord pr = getHandlerForDriver(dataDestinationList.get(i).driverSelection).getOutgoingProtocolRecord(dataDestinationList.get(i));
+            dataDestinationRecords.add(pr);
         }
     }
     public void startBridge()

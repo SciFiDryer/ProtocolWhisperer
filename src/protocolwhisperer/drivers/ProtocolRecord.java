@@ -19,7 +19,40 @@ package protocolwhisperer.drivers;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public interface ProtocolRecord {
-    public double getValue();
-    public void setValue(double value);
+public abstract class ProtocolRecord {
+    public static int RECORD_TYPE_INCOMING = 1;
+    public static int RECORD_TYPE_OUTGOING = 2;
+    int type = 0;
+    String uuid = null;
+    String tag = "";
+    public abstract double getValue();
+    public abstract void setValue(double value);
+    public String getTag()
+    {
+        return tag;
+    }
+    public void setTag(String aTag)
+    {
+        tag = aTag;
+    }
+    public int getType()
+    {
+        return type;
+    }
+    public void setType(int aType)
+    {
+        type = aType;
+    }
+    public String getUuid()
+    {
+        return uuid;
+    }
+    public void setUuid(String aUuid)
+    {
+        uuid = aUuid;
+    }
+    public void newUuid()
+    {
+        uuid = java.util.UUID.randomUUID().toString();
+    }
 }
