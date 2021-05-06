@@ -40,6 +40,7 @@ public class ModbusProtocolRecord extends ProtocolRecord {
     public boolean wordSwap = false;
     public boolean byteSwap = false;
     public int node = 0;
+    public Class protocolHandler = ModbusProtocolHandler.class;
     public ModbusProtocolRecord(String aTag, int protocol, String host, int port, int aNode, int format, int aFunctionCode, int aStartingRegister, int aQuantity, boolean aWordSwap, boolean aByteSwap)
     {
         tag = aTag;
@@ -57,6 +58,13 @@ public class ModbusProtocolRecord extends ProtocolRecord {
     public ModbusProtocolRecord()
     {
         
+    }
+    public ModbusProtocolRecord(int aType, int aProtocolType, String calledMenuItem)
+    {
+        type = aType;
+        protocolType = aProtocolType;
+        selectedItem = calledMenuItem;
+        super.protocolHandler = protocolHandler;
     }
     public byte[] wordSwap(byte[] buf)
     {

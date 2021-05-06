@@ -24,11 +24,8 @@ import protocolwhisperer.BridgeMappingRecord;
 public interface ProtocolHandler {
     static int PANE_TYPE_INCOMING = 1;
     static int PANE_TYPE_OUTGOING = 2;
-    public javax.swing.JTable buildProtocolPane(int paneType, String selectedItem);
-    public ProtocolRecord getIncomingProtocolRecord(protocolwhisperer.BridgeEntryContainer container);
-    public ProtocolRecord getOutgoingProtocolRecord(protocolwhisperer.BridgeEntryContainer container);
+    public ProtocolRecord getNewProtocolRecord(int type, String calledMenuItem);
     public String[] getIncomingMenuNames();
     public String[] getOutgoingMenuNames();
-    public void setIncomingSettings(javax.swing.JTable table, ProtocolRecord protocolRecord);
-    public void setOutgoingSettings(ProtocolRecord protocolRecord);
+    public void configure(ProtocolRecord currentRecord);
 }

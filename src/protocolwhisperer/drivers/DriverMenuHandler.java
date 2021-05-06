@@ -16,6 +16,7 @@
 package protocolwhisperer.drivers;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.table.*;
 import java.util.*;
 import protocolwhisperer.*;
 /**
@@ -40,19 +41,19 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     {
         return driverList;
     }
-    public DriverMenuHandler(JComboBox aIncomingDataSelector, JComboBox aOutgoingDataSelector, MainFrame aParentFrame, JPanel aIncomingDataSettings, JPanel aOutgoingPanel)
+    public DriverMenuHandler(JComboBox aIncomingDataSelector, JComboBox aOutgoingDataSelector, MainFrame aParentFrame)
     {
         incomingDataSelector = aIncomingDataSelector;
         outgoingDataSelector = aOutgoingDataSelector;
         parentFrame = aParentFrame;
-        outgoingPanel = aOutgoingPanel;
-        incomingDataSettings = aIncomingDataSettings;
+        
+        
         loadDrivers();
     }
     public void loadDrivers()
     {
-        driverList.add(new ModbusProtocolHandler(this, parentFrame, parentEntryContainer, incomingDataSettings, outgoingPanel));
-        //driverList.add(new CIPProtocolHandler(this, parentFrame, parentEntryContainer, incomingDataSettings, outgoingPanel));
+        driverList.add(new ModbusProtocolHandler());
+        driverList.add(new CIPProtocolHandler());
         ArrayList<String> menuItems = new ArrayList();
         ArrayList<String> outgoingMenuItems = new ArrayList();
         menuItems.add("Select");
@@ -86,29 +87,106 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
             dispatchDriverEvent(ProtocolHandler.PANE_TYPE_OUTGOING, outgoingDataSelector.getSelectedItem().toString());
         }
     }
-    public JTable dispatchDriverEvent(int paneType, String selectedItem)
+    public void constructGuiRecord(ProtocolRecord currentRecord)
     {
-        boolean handlerFound = false;
-        for (int i = 0; i < driverList.size() && !handlerFound; i++)
+        final JPanel subjectPane;
+        final ArrayList subjectRecords;
+        if (currentRecord.type == ProtocolRecord.RECORD_TYPE_INCOMING)
+        {
+            subjectPane = parentFrame.incomingDataPane;
+            subjectRecords = parentFrame.manager.dataSourceRecords;
+        }
+        else
+        {
+            subjectPane = parentFrame.outgoingDataPane;
+            subjectRecords = parentFrame.manager.dataDestinationRecords;
+        }
+        JPanel currentPanel = new JPanel();
+        currentPanel.add(new JLabel(currentRecord.selectedItem));
+        
+        JButton configButton = new JButton("Configure");
+        ProtocolHandler currentHandler = getProtocolHandler(currentRecord.protocolHandler);
+        configButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                currentHandler.configure(currentRecord);
+            }
+        });
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                subjectPane.remove(currentPanel);
+                subjectRecords.remove(currentRecord);
+            }
+        });
+        JTextField tagField = new JTextField(10);
+        tagField.setText(currentRecord.tag);
+        tagField.addKeyListener(new KeyAdapter()
+        {
+            public void keyReleased(KeyEvent e)
+            {
+                currentRecord.tag = tagField.getText();
+            }
+        });
+        currentPanel.add(tagField);
+        currentPanel.add(configButton);
+        currentPanel.add(deleteButton);
+        subjectPane.add(currentPanel);
+        parentFrame.repaint();
+    }
+    public ProtocolHandler getProtocolHandler(String selectedItem)
+    {
+        for (int i = 0; i < driverList.size(); i++)
         {
             ProtocolHandler currentHandler = driverList.get(i);
-            String[] menuNames = null;
-            if (paneType == ProtocolHandler.PANE_TYPE_INCOMING)
-            {
-                menuNames = currentHandler.getIncomingMenuNames();
-            }
-            if (paneType == ProtocolHandler.PANE_TYPE_OUTGOING)
-            {
-                menuNames = currentHandler.getOutgoingMenuNames();
-            }
-            for (int j = 0; j < menuNames.length && !handlerFound; j++)
+            String[] menuNames = currentHandler.getIncomingMenuNames();
+            
+            for (int j = 0; j < menuNames.length; j++)
             {
                 if (menuNames[j].equals(selectedItem))
                 {
-                    return currentHandler.buildProtocolPane(paneType, selectedItem);
+                    return currentHandler;
+                }
+            }
+            menuNames = currentHandler.getOutgoingMenuNames();
+            for (int j = 0; j < menuNames.length; j++)
+            {
+                if (menuNames[j].equals(selectedItem))
+                {
+                    return currentHandler;
                 }
             }
         }
         return null;
     }
+    public ProtocolHandler getProtocolHandler(Class handlerClass)
+    {
+        for (int i = 0; i < driverList.size(); i++)
+        {
+            ProtocolHandler currentHandler = driverList.get(i);
+            if (handlerClass.isInstance(currentHandler))
+            {
+                return currentHandler;
+            }  
+        }
+        return null;
+    }
+    public void dispatchDriverEvent(int paneType, String selectedItem)
+    {
+        ProtocolHandler currentHandler = getProtocolHandler(selectedItem);
+        ProtocolRecord currentRecord = currentHandler.getNewProtocolRecord(paneType, selectedItem);
+        if (currentRecord.type == ProtocolRecord.RECORD_TYPE_INCOMING)
+        {
+            parentFrame.manager.dataSourceRecords.add(currentRecord);
+        }
+        if (currentRecord.type == ProtocolRecord.RECORD_TYPE_OUTGOING)
+        {
+            parentFrame.manager.dataDestinationRecords.add(currentRecord);
+        }
+        constructGuiRecord(currentRecord);
+    }
 }
+

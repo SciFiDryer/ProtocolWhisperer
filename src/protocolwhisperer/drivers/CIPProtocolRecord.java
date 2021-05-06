@@ -22,12 +22,12 @@ package protocolwhisperer.drivers;
 public class CIPProtocolRecord extends ProtocolRecord {
     public static int PROTOCOL_TYPE_CIP_READ = 1;
     public static int PROTOCOL_TYPE_CIP_WRITE = 2;
-    public int type = 0;
     public String host = null;
     public int port = 0;
-    public String tag = null;
+    public String cipTag = null;
     double value = 0;
     public int slot = 0;
+    public Class protocolHandler = CIPProtocolHandler.class;
     public CIPProtocolRecord()
     {
         
@@ -37,8 +37,14 @@ public class CIPProtocolRecord extends ProtocolRecord {
         type = aType;
         host = aHost;
         port = aPort;
-        tag = aTag;
+        cipTag = aTag;
         slot = aSlot;
+    }
+    public CIPProtocolRecord(int aType, String calledMenuItem)
+    {
+        selectedItem = calledMenuItem;
+        type = aType;
+        super.protocolHandler = protocolHandler;
     }
     public void setValue(double aValue)
     {

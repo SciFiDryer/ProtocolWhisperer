@@ -21,7 +21,7 @@ import com.intelligt.modbus.jlibmodbus.msg.base.*;
 import com.intelligt.modbus.jlibmodbus.msg.response.*;
 import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import java.beans.XMLDecoder;
-import java.io.FileInputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.util.*;
 import javax.swing.*;
@@ -82,16 +82,19 @@ public class BridgeManager{
         driverList.add(new CIPProtocolDriver(this));
         if (headless)
         {
-            loadConfig(fileName);
+            loadConfig(new File(fileName));
             startBridge();
         }
     }
-    public void loadConfig(String fileName)
+    public void loadConfig(File f)
     {
         try
         {
-            XMLDecoder xmld = new XMLDecoder(new FileInputStream(fileName));
+            XMLDecoder xmld = new XMLDecoder(new FileInputStream(f));
+            dataSourceRecords.clear();
+            dataDestinationRecords.clear();
             dataSourceRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
+            dataDestinationRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
             xmld.close();
         }
         catch (Exception e)
@@ -156,7 +159,7 @@ public class BridgeManager{
             }
             
         }
-        //get incoming records
+        
         for (int i = 0; i < driverList.size(); i++)
         {
             ProtocolDriver currentDriver = driverList.get(i);
@@ -191,51 +194,15 @@ public class BridgeManager{
     }
     public void restoreGuiFromFile()
     {
+        bridgeFrame.incomingDataPane.removeAll();
         for (int i = 0; i < dataSourceRecords.size(); i++)
         {
-            if (dataSourceRecords.get(i) instanceof ModbusProtocolRecord)
-            {
-                JTable table = dmh.dispatchDriverEvent(protocolwhisperer.drivers.ProtocolHandler.PANE_TYPE_INCOMING, "From Modbus Slave (act as master)");
-                for (int j = 0; j < dmh.getDriverList().size(); j++)
-                {
-                    if (dmh.getDriverList().get(j) instanceof ModbusProtocolHandler)
-                    {
-                        ((ModbusProtocolHandler)(dmh.getDriverList().get(j))).setIncomingSettings(table, (ModbusProtocolRecord)dataSourceRecords.get(i));
-                    }
-                }
-            }
-            /*
-            if (dataSourceRecords.get(i).incomingRecord instanceof CIPProtocolRecord)
-            {
-                bridgeFrame.addMapping();
-                for (int j = 0; j < dmh.getDriverList().size(); j++)
-                {
-                    if (dmh.getDriverList().get(j) instanceof CIPProtocolHandler)
-                    {
-                        ((CIPProtocolHandler)(dmh.getDriverList().get(j))).setIncomingSettings((CIPProtocolRecord)dataSourceRecords.get(i).incomingRecord);
-                    }
-                }
-            }
-            if (dataSourceRecords.get(i).outgoingRecord instanceof ModbusProtocolRecord)
-            {
-                for (int j = 0; j < dmh.getDriverList().size(); j++)
-                {
-                    if (dmh.getDriverList().get(j) instanceof ModbusProtocolHandler)
-                    {
-                        ((ModbusProtocolHandler)(dmh.getDriverList().get(j))).setOutgoingSettings((ModbusProtocolRecord)dataSourceRecords.get(i).outgoingRecord);
-                    }
-                }
-            }
-            if (dataSourceRecords.get(i).outgoingRecord instanceof CIPProtocolRecord)
-            {
-                for (int j = 0; j < dmh.getDriverList().size(); j++)
-                {
-                    if (dmh.getDriverList().get(j) instanceof CIPProtocolHandler)
-                    {
-                        ((CIPProtocolHandler)(dmh.getDriverList().get(j))).setOutgoingSettings((CIPProtocolRecord)dataSourceRecords.get(i).outgoingRecord);
-                    }
-                }
-            }*/
+            dmh.constructGuiRecord(dataSourceRecords.get(i));
+        }
+        bridgeFrame.outgoingDataPane.removeAll();
+        for (int i = 0; i < dataDestinationRecords.size(); i++)
+        {
+            dmh.constructGuiRecord(dataDestinationRecords.get(i));
         }
     }
     public ProtocolHandler getHandlerForDriver(String driverSelection)
@@ -261,21 +228,6 @@ public class BridgeManager{
             }
         }
         return null;
-    }
-    public void constructSettingsFromGui()
-    {
-        dataSourceRecords.clear();
-        for (int i = 0; i < dataSourceList.size(); i++)
-        {
-            ProtocolRecord pr = getHandlerForDriver(dataSourceList.get(i).driverSelection).getIncomingProtocolRecord(dataSourceList.get(i));
-            dataSourceRecords.add(pr);
-        }
-        dataDestinationRecords.clear();
-        for (int i = 0; i < dataDestinationList.size(); i++)
-        {
-            ProtocolRecord pr = getHandlerForDriver(dataDestinationList.get(i).driverSelection).getOutgoingProtocolRecord(dataDestinationList.get(i));
-            dataDestinationRecords.add(pr);
-        }
     }
     public void startBridge()
     {

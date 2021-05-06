@@ -27,4 +27,5 @@ public interface ProtocolDriver {
     public void sendOutgoingRecords();
     public void mapIncomingValues();
     public void shutdown();
+    public Class getProtocolHandlerClass();
 }

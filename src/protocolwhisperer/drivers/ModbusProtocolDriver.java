@@ -334,7 +334,10 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             tcpParameters.setPort(currentSlave.port);
             //this should work but somehow doesn't
             //tcpParameters.setConnectionTimeout(3000);
-
+            if (ProtocolWhisperer.debug)
+            {
+                System.out.println("Connecting to slave " + currentSlave.hostname + " on port " + currentSlave.port);
+            }
             master = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
             master.setResponseTimeout(5000);
         }
@@ -368,10 +371,10 @@ public class ModbusProtocolDriver implements ProtocolDriver{
         {
             startingRegister = registers[j];
             quantity = 1;
-            for (int k = 0; k < 250 && k+j < registers.length; k++)
+            for (int k = 0; k < 128 && k+j < registers.length; k++)
             {
                 int calcDistance = registers[j+k]-registers[j] + 1;
-                if (calcDistance < 250)
+                if (calcDistance < 128)
                 {
                     quantity = calcDistance;
                     j = j+k;
@@ -379,6 +382,10 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             }
             try 
             {
+                if (ProtocolWhisperer.debug)
+                {
+                    System.out.println("Requesting function code " + functionCode + " register " + startingRegister +  " length " + quantity + " from slave " + currentSlave.hostname);
+                }
                 response = generateModbusMessage(master, 0, 1, currentSlave.node, functionCode, startingRegister, quantity, null);
             }
             catch(Exception e)
@@ -390,6 +397,10 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             }
             if (response != null)
             {
+                if (ProtocolWhisperer.debug)
+                {
+                    System.out.println("Got response from slave " + currentSlave.hostname);
+                }
                 byte[] buf = ((ReadHoldingRegistersResponse)(response)).getBytes();
                 for (int k = 0; k < quantity; k++)
                 {
@@ -639,5 +650,9 @@ public class ModbusProtocolDriver implements ProtocolDriver{
                 }
             }
         }
+    }
+    public Class getProtocolHandlerClass()
+    {
+        return ModbusProtocolHandler.class;
     }
 }

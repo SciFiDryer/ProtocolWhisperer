@@ -62,11 +62,11 @@ public class CIPProtocolDriver implements ProtocolDriver{
     public void buildOutgoingHostTable()
     {
         outgoingHostList.clear();
-        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
+        for (int i = 0; i < manager.dataDestinationRecords.size(); i++)
         {
-            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
+            if (manager.dataDestinationRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
+                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataDestinationRecords.get(i);
                 addToHostList(outgoingHostList, currentRecord);
             }
         }
@@ -79,13 +79,13 @@ public class CIPProtocolDriver implements ProtocolDriver{
             if (currentRecord.type == currentList.get(i).type && currentRecord.host.equals(currentList.get(i).host) && currentRecord.port == currentList.get(i).port && currentRecord.slot == currentList.get(i).slot)
             {
                 foundRecord = true;
-                currentList.get(i).tags.add(currentRecord.tag);
+                currentList.get(i).tags.add(currentRecord.cipTag);
             }
         }
         if (!foundRecord)
         {
             CIPHostRecord chr = new CIPHostRecord(currentRecord.type, currentRecord.host, currentRecord.port, currentRecord.slot);
-            chr.tags.add(currentRecord.tag);
+            chr.tags.add(currentRecord.cipTag);
             currentList.add(chr);
         }
     }
@@ -155,7 +155,7 @@ public class CIPProtocolDriver implements ProtocolDriver{
                     {
                         for (int k = 0; k < incomingHostList.get(j).tags.size(); k++)
                         {
-                            if (incomingHostList.get(j).tags.get(k).equals(currentRecord.tag))
+                            if (incomingHostList.get(j).tags.get(k).equals(currentRecord.cipTag))
                             {
                                 currentRecord.value = incomingHostList.get(j).values[k];
                             }
@@ -175,19 +175,18 @@ public class CIPProtocolDriver implements ProtocolDriver{
     }
     public void sendOutgoingRecords()
     {
-        
-        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
+        for (int i = 0; i < manager.dataDestinationRecords.size(); i++)
         {
-            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
+            if (manager.dataDestinationRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
+                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataDestinationRecords.get(i);
                 for (int j = 0; j < outgoingHostList.size(); j++)
                 {
                     if (currentRecord.host.equals(outgoingHostList.get(j).host) && currentRecord.port == outgoingHostList.get(j).port && currentRecord.slot == outgoingHostList.get(j).slot)
                     {
                         for (int k = 0; k < outgoingHostList.get(j).tags.size(); k++)
                         {
-                            if (outgoingHostList.get(j).tags.get(k).equals(currentRecord.tag))
+                            if (outgoingHostList.get(j).tags.get(k).equals(currentRecord.cipTag))
                             {
                                 outgoingHostList.get(j).values = Arrays.copyOf(outgoingHostList.get(j).values, k+1);
                                 outgoingHostList.get(j).values[k] = currentRecord.value;
@@ -228,5 +227,9 @@ public class CIPProtocolDriver implements ProtocolDriver{
                 e.printStackTrace();
             }
         }
+    }
+    public Class getProtocolHandlerClass()
+    {
+        return CIPProtocolHandler.class;
     }
 }

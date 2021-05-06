@@ -25,8 +25,11 @@ public abstract class ProtocolRecord {
     int type = 0;
     String uuid = null;
     String tag = "";
+    public String selectedItem = "";
+    public boolean configured = false;
     public abstract double getValue();
     public abstract void setValue(double value);
+    public Class protocolHandler = null;
     public String getTag()
     {
         return tag;
