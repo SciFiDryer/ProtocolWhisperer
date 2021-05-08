@@ -122,16 +122,6 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
                 subjectRecords.remove(currentRecord);
             }
         });
-        JTextField tagField = new JTextField(10);
-        tagField.setText(currentRecord.tag);
-        tagField.addKeyListener(new KeyAdapter()
-        {
-            public void keyReleased(KeyEvent e)
-            {
-                currentRecord.tag = tagField.getText();
-            }
-        });
-        currentPanel.add(tagField);
         currentPanel.add(configButton);
         currentPanel.add(deleteButton);
         subjectPane.add(currentPanel);

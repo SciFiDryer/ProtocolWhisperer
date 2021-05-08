@@ -241,58 +241,43 @@ public class ModbusProtocolDriver implements ProtocolDriver{
     }
     public void addToModbusList(ArrayList<ModbusHostRecord> currentList, ModbusProtocolRecord currentRecord)
     {
-        boolean foundRecord = false;
-        for (int i = 0; i < currentList.size() && !foundRecord; i++)
+        
+        if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_MASTER)
         {
-            if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_MASTER && currentRecord.slaveHost.equals(currentList.get(i).hostname) && currentRecord.slavePort == currentList.get(i).port && currentRecord.node == currentList.get(i).node)
+            ModbusHostRecord newHostRecord = new ModbusHostRecord(ModbusHostRecord.HOST_TYPE_REMOTE_SLAVE, currentRecord.slaveHost, currentRecord.slavePort, currentRecord.node);
+            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
-                foundRecord = true;
-                for (int j = 0; j < currentRecord.quantity; j++)
+                ModbusTagRecord currentRegister = (ModbusTagRecord)currentRecord.tagRecords.get(j);
+                for (int k = 0; k < currentRegister.quantity; k++)
                 {
-                    RegisterRecord rr = new RegisterRecord(currentRecord.functionCode, j+currentRecord.startingRegister);
-                    if (currentRecord.rawValue != null)
+                    RegisterRecord rr = new RegisterRecord(currentRegister.functionCode, k+currentRegister.startingRegister);
+                    if (currentRegister.rawValue != null)
                     {
-                        rr.value = Arrays.copyOfRange(currentRecord.rawValue, j*2, (j*2)+2);
+                        rr.value = Arrays.copyOfRange(currentRegister.rawValue, k*2, (k*2)+2);
                     }
-                    currentList.get(i).registerRecords.add(rr);
+                    newHostRecord.registerRecords.add(rr);
                 }
             }
-            else if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_SLAVE && currentRecord.slavePort == currentList.get(i).port && currentRecord.node == currentList.get(i).node)
-            {
-                for (int j = 0; j < currentRecord.quantity; j++)
-                {
-                    RegisterRecord rr = new RegisterRecord(currentRecord.functionCode, j+currentRecord.startingRegister);
-                    if (currentRecord.rawValue != null)
-                    {
-                        rr.value = Arrays.copyOfRange(currentRecord.rawValue, j*2, (j*2)+2);
-                    }
-                    currentList.get(i).registerRecords.add(rr);
-                    associateSlave(currentList.get(i));
-                }
-            }
+            currentList.add(newHostRecord);
         }
-        if (!foundRecord)
+        else if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_SLAVE)
         {
-            ModbusHostRecord mhr = null;
-            if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_MASTER)
+            ModbusHostRecord newHostRecord = new ModbusHostRecord(ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE, "", currentRecord.slavePort, currentRecord.node);
+            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
-                mhr = new ModbusHostRecord(ModbusHostRecord.HOST_TYPE_REMOTE_SLAVE, currentRecord.slaveHost, currentRecord.slavePort, currentRecord.node);
-            }
-            if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_SLAVE)
-            {
-                mhr = new ModbusHostRecord(ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE, null, currentRecord.slavePort, currentRecord.node);
-                associateSlave(mhr);
-            }
-            for (int j = 0; j < currentRecord.quantity; j++)
-            {
-                RegisterRecord rr = new RegisterRecord(currentRecord.functionCode, j+currentRecord.startingRegister);
-                if (currentRecord.rawValue != null)
+                ModbusTagRecord currentRegister = (ModbusTagRecord)currentRecord.tagRecords.get(j);
+                for (int k = 0; k < currentRegister.quantity; k++)
                 {
-                    rr.value = Arrays.copyOfRange(currentRecord.rawValue, j*2, j*2+2);
+                    RegisterRecord rr = new RegisterRecord(currentRegister.functionCode, k+currentRegister.startingRegister);
+                    if (currentRegister.rawValue != null)
+                    {
+                        rr.value = Arrays.copyOfRange(currentRegister.rawValue, k*2, (k*2)+2);
+                    }
+                    newHostRecord.registerRecords.add(rr);
+                    associateSlave(newHostRecord);
                 }
-                mhr.registerRecords.add(rr);
             }
-            currentList.add(mhr);
+            currentList.add(newHostRecord);
         }
     }
     public void associateSlave(ModbusHostRecord currentRecord)
@@ -446,7 +431,11 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             if (manager.dataSourceRecords.get(i) instanceof ModbusProtocolRecord)
             {
                 ModbusProtocolRecord incomingRecord = (ModbusProtocolRecord)manager.dataSourceRecords.get(i);
-                incomingRecord.rawValue = getModbusValue(incomingRecord.slaveHost, incomingRecord.slavePort, incomingRecord.functionCode, incomingRecord.startingRegister, incomingRecord.quantity);
+                for (int j = 0; j < incomingRecord.tagRecords.size(); j++)
+                {
+                    ModbusTagRecord currentTag = (ModbusTagRecord)incomingRecord.tagRecords.get(i);
+                    currentTag.rawValue = getModbusValue(incomingRecord.slaveHost, incomingRecord.slavePort, currentTag.functionCode, currentTag.startingRegister, currentTag.quantity);
+                }
             }
         }
     }

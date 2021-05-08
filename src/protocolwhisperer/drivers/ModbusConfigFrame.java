@@ -15,6 +15,7 @@
  */
 package protocolwhisperer.drivers;
 import javax.swing.*;
+import java.util.*;
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
@@ -26,10 +27,11 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
      */
     static String[] dataTypeMenuNames = new String[] {"Select data type", "Float", "Unsigned Int16", "Unsigned Int32"};
     ModbusProtocolRecord currentRecord = null;
+    ArrayList<TagMapper> tagGuiRecords = new ArrayList();
     public ModbusConfigFrame(ModbusProtocolRecord aCurrentRecord) {
         initComponents();
         currentRecord = aCurrentRecord;
-        dataTypeSelector.setModel(new DefaultComboBoxModel(dataTypeMenuNames));
+        
         if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_SLAVE)
         {
             hostIpField.setVisible(false);
@@ -43,20 +45,85 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
             }
             portField.setText(currentRecord.slavePort + "");
             idField.setText(currentRecord.node + "");
+            buildTagRecords(currentRecord.tagRecords); 
+        }
+    }
+    public void buildTagRecords(ArrayList<TagRecord> tagRecords)
+    {
+        for (int i = 0; i < tagRecords.size(); i++)
+        {
+            ModbusTagRecord currentRecord = (ModbusTagRecord)tagRecords.get(i);
+            buildTagRecord(currentRecord);
+        }
+    }
+    public void buildTagRecord(ModbusTagRecord currentRecord)
+    {
+        JPanel currentTagPane = new JPanel();
+        JTextField tagField = new JTextField(10);
+        JComboBox functionCodeSelector = new JComboBox(new String[] {"Select register type", "Holding registers", "InputRegisters"});
+        JTextField registerField = new JTextField(4);
+        JComboBox dataTypeSelector = new JComboBox();
+        JCheckBox wordSwapCheckbox = new JCheckBox("Word swap");
+        JCheckBox byteSwapCheckbox = new JCheckBox("Byte swap");
+        dataTypeSelector.setModel(new DefaultComboBoxModel(dataTypeMenuNames));
+        if (currentRecord.configured)
+        {
+            tagField.setText(currentRecord.tag);
             if (currentRecord.functionCode == 3)
             {
-                registerTypeSelector.setSelectedIndex(1);
+                functionCodeSelector.setSelectedIndex(1);
             }
             if (currentRecord.functionCode == 4)
             {
-                registerTypeSelector.setSelectedIndex(2);
+                functionCodeSelector.setSelectedIndex(2);
             }
             registerField.setText(currentRecord.startingRegister + "");
             dataTypeSelector.setSelectedItem(ModbusProtocolHandler.getMenuItemFromFormat(currentRecord.formatType));
             wordSwapCheckbox.setSelected(currentRecord.wordSwap);
             byteSwapCheckbox.setSelected(currentRecord.byteSwap);
         }
-        pack();
+        currentTagPane.add(tagField);
+        currentTagPane.add(functionCodeSelector);
+        currentTagPane.add(registerField);
+        currentTagPane.add(dataTypeSelector);
+        currentTagPane.add(byteSwapCheckbox);
+        currentTagPane.add(wordSwapCheckbox);
+        tagRecordPane.add(currentTagPane);
+        tagGuiRecords.add(new TagMapper()
+        {
+            public ModbusTagRecord mapTagRecord()
+            {
+                ModbusTagRecord outputRecord = new ModbusTagRecord();
+                outputRecord.tag = tagField.getText();
+                outputRecord.startingRegister = Integer.parseInt(registerField.getText());
+                outputRecord.formatType = ModbusProtocolHandler.getFormatFromMenuItem(dataTypeSelector.getSelectedItem().toString());
+                outputRecord.quantity = 2;
+                if (outputRecord.formatType == ModbusTagRecord.FORMAT_TYPE_UINT_16)
+                {
+                    outputRecord.quantity = 1;
+                }
+                if (functionCodeSelector.getSelectedIndex() == 1)
+                {
+                    outputRecord.functionCode = 3;
+                }
+                if (functionCodeSelector.getSelectedIndex() == 2)
+                {
+                    outputRecord.functionCode = 4;
+                }
+                outputRecord.byteSwap = byteSwapCheckbox.isSelected();
+                outputRecord.wordSwap = wordSwapCheckbox.isSelected();
+                outputRecord.configured = true;
+                return outputRecord;
+            }
+        });
+    }
+    public void mapTagRecords()
+    {
+        currentRecord.tagRecords.clear();
+        for (int i = 0; i < tagGuiRecords.size(); i++)
+        {
+            currentRecord.tagRecords.add(tagGuiRecords.get(i).mapTagRecord());
+        }
     }
 
     /**
@@ -68,89 +135,101 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        layoutPane = new javax.swing.JPanel();
+        configPane = new javax.swing.JPanel();
         hostIpLabel = new javax.swing.JLabel();
         hostIpField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         idField = new javax.swing.JTextField();
-        jPanel2 = new javax.swing.JPanel();
-        registerTypeSelector = new javax.swing.JComboBox<>();
+        addTagPane = new javax.swing.JPanel();
+        addTagButton = new javax.swing.JButton();
+        headerPane = new javax.swing.JPanel();
+        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
+        jLabel1 = new javax.swing.JLabel();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(100, 0), new java.awt.Dimension(100, 0), new java.awt.Dimension(10, 32767));
         jLabel4 = new javax.swing.JLabel();
-        registerField = new javax.swing.JTextField();
-        jPanel4 = new javax.swing.JPanel();
-        dataTypeSelector = new javax.swing.JComboBox<>();
-        wordSwapCheckbox = new javax.swing.JCheckBox();
-        byteSwapCheckbox = new javax.swing.JCheckBox();
-        jPanel3 = new javax.swing.JPanel();
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(50, 0), new java.awt.Dimension(50, 0), new java.awt.Dimension(50, 32767));
+        jLabel5 = new javax.swing.JLabel();
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(30, 0), new java.awt.Dimension(30, 0), new java.awt.Dimension(30, 32767));
+        jLabel6 = new javax.swing.JLabel();
+        tagParentPane = new javax.swing.JScrollPane();
+        jPanel2 = new javax.swing.JPanel();
+        tagRecordPane = new javax.swing.JPanel();
+        okPane = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Modbus Config");
-        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
+
+        layoutPane.setLayout(new javax.swing.BoxLayout(layoutPane, javax.swing.BoxLayout.Y_AXIS));
 
         hostIpLabel.setText("Host IP:");
-        jPanel1.add(hostIpLabel);
+        configPane.add(hostIpLabel);
 
         hostIpField.setColumns(10);
         hostIpField.setToolTipText("");
-        jPanel1.add(hostIpField);
+        configPane.add(hostIpField);
 
         jLabel2.setText("Port:");
-        jPanel1.add(jLabel2);
+        configPane.add(jLabel2);
 
         portField.setColumns(3);
         portField.setText("502");
         portField.setToolTipText("");
-        jPanel1.add(portField);
+        configPane.add(portField);
 
         jLabel3.setText("ID:");
-        jPanel1.add(jLabel3);
+        configPane.add(jLabel3);
 
         idField.setColumns(3);
         idField.setText("1");
         idField.setToolTipText("");
-        jPanel1.add(idField);
+        configPane.add(idField);
 
-        getContentPane().add(jPanel1);
+        layoutPane.add(configPane);
 
-        registerTypeSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select Register Type", "Holding Registers", "Input Registers" }));
-        jPanel2.add(registerTypeSelector);
-
-        jLabel4.setText("Register:");
-        jPanel2.add(jLabel4);
-
-        registerField.setColumns(4);
-        registerField.setToolTipText("");
-        registerField.addActionListener(new java.awt.event.ActionListener() {
+        addTagButton.setText("Add tag");
+        addTagButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                registerFieldActionPerformed(evt);
+                addTagButtonActionPerformed(evt);
             }
         });
-        jPanel2.add(registerField);
+        addTagPane.add(addTagButton);
 
-        getContentPane().add(jPanel2);
+        layoutPane.add(addTagPane);
 
-        dataTypeSelector.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dataTypeSelectorActionPerformed(evt);
-            }
-        });
-        jPanel4.add(dataTypeSelector);
+        headerPane.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        headerPane.add(filler3);
 
-        wordSwapCheckbox.setText("Word Swap");
-        wordSwapCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                wordSwapCheckboxActionPerformed(evt);
-            }
-        });
-        jPanel4.add(wordSwapCheckbox);
+        jLabel1.setText("Tag");
+        headerPane.add(jLabel1);
+        headerPane.add(filler1);
 
-        byteSwapCheckbox.setText("Byte Swap");
-        jPanel4.add(byteSwapCheckbox);
+        jLabel4.setText("Register group");
+        headerPane.add(jLabel4);
+        headerPane.add(filler2);
 
-        getContentPane().add(jPanel4);
+        jLabel5.setText("Register");
+        headerPane.add(jLabel5);
+        headerPane.add(filler4);
+
+        jLabel6.setText("Data Type");
+        headerPane.add(jLabel6);
+
+        layoutPane.add(headerPane);
+
+        getContentPane().add(layoutPane, java.awt.BorderLayout.NORTH);
+
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        tagRecordPane.setLayout(new javax.swing.BoxLayout(tagRecordPane, javax.swing.BoxLayout.Y_AXIS));
+        jPanel2.add(tagRecordPane, java.awt.BorderLayout.CENTER);
+
+        tagParentPane.setViewportView(jPanel2);
+
+        getContentPane().add(tagParentPane, java.awt.BorderLayout.CENTER);
 
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -158,72 +237,64 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
                 okButtonActionPerformed(evt);
             }
         });
-        jPanel3.add(okButton);
+        okPane.add(okButton);
 
-        getContentPane().add(jPanel3);
+        getContentPane().add(okPane, java.awt.BorderLayout.SOUTH);
 
-        pack();
+        setBounds(0, 0, 778, 325);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void registerFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_registerFieldActionPerformed
-
-    private void dataTypeSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataTypeSelectorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_dataTypeSelectorActionPerformed
-
-    private void wordSwapCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wordSwapCheckboxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_wordSwapCheckboxActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         currentRecord.slaveHost = hostIpField.getText();
         currentRecord.slavePort = Integer.parseInt(portField.getText());
         currentRecord.node = Integer.parseInt(idField.getText());
-        if (registerTypeSelector.getSelectedIndex() == 1)
-        {
-            currentRecord.functionCode = 3;
-        }
-        if (registerTypeSelector.getSelectedIndex() == 2)
-        {
-            currentRecord.functionCode = 4;
-        }
-        currentRecord.startingRegister = Integer.parseInt(registerField.getText());
-        currentRecord.formatType = ModbusProtocolHandler.getFormatFromMenuItem(dataTypeSelector.getSelectedItem().toString());
-        currentRecord.quantity = 2;
-        if (currentRecord.formatType == ModbusProtocolRecord.FORMAT_TYPE_UINT_16)
-        {
-            currentRecord.quantity = 1;
-        }
-        currentRecord.byteSwap = byteSwapCheckbox.isSelected();
-        currentRecord.wordSwap = wordSwapCheckbox.isSelected();
         currentRecord.configured = true;
+        mapTagRecords();
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void addTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTagButtonActionPerformed
+        ModbusTagRecord tagRecord = new ModbusTagRecord();
+        currentRecord.tagRecords.add(tagRecord);
+        buildTagRecord(tagRecord);
+        revalidate();
+        repaint();
+    }//GEN-LAST:event_addTagButtonActionPerformed
+    public interface TagMapper
+    {
+        public ModbusTagRecord mapTagRecord();
+    }
+    
     /**
      * @param args the command line arguments
      */
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox byteSwapCheckbox;
-    private javax.swing.JComboBox<String> dataTypeSelector;
+    private javax.swing.JButton addTagButton;
+    private javax.swing.JPanel addTagPane;
+    private javax.swing.JPanel configPane;
+    private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
+    private javax.swing.Box.Filler filler3;
+    private javax.swing.Box.Filler filler4;
+    private javax.swing.JPanel headerPane;
     private javax.swing.JTextField hostIpField;
     private javax.swing.JLabel hostIpLabel;
     private javax.swing.JTextField idField;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel layoutPane;
     private javax.swing.JButton okButton;
+    private javax.swing.JPanel okPane;
     private javax.swing.JTextField portField;
-    private javax.swing.JTextField registerField;
-    private javax.swing.JComboBox<String> registerTypeSelector;
-    private javax.swing.JCheckBox wordSwapCheckbox;
+    private javax.swing.JScrollPane tagParentPane;
+    private javax.swing.JPanel tagRecordPane;
     // End of variables declaration//GEN-END:variables
 }
+

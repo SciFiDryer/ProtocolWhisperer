@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Matt Jamesson <scifidryer@gmail.com>.
+ * Copyright 2021 Matt Jamesson <scifidryer@gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,16 @@
  * limitations under the License.
  */
 package protocolwhisperer.drivers;
-import java.util.*;
+
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class CIPHostRecord {
-    String host = null;
-    int port = 0;
-    int slot = 0;
-    int type = 0;
-    ArrayList<String> tags = new ArrayList();
-    double[] values = new double[]{};
-    public CIPHostRecord(int aType, String aHost, int aPort, int aSlot)
-    {
-        type = aType;
-        host = aHost;
-        port = aPort;
-        slot = aSlot;
+public abstract class TagRecord {
+        public String tag = "";
+        double value = 0;
+        public boolean configured = false;
+        public abstract void setValue(double value);
+        public abstract double getValue();
     }
-    public ArrayList<String> getTags()
-    {
-        return tags;
-    }
-}
+    

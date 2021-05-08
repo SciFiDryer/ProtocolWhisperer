@@ -155,7 +155,12 @@ public class BridgeManager{
             for (int i = 0; i < dataSourceRecords.size(); i++)
             {
                 ProtocolRecord pr = dataSourceRecords.get(i);
-                model.addRow(new Object[] {pr.getTag(), pr.getValue()});
+                for (int j = 0; j < pr.tagRecords.size(); j++)
+                {
+                    TagRecord tr = pr.tagRecords.get(j);
+                    model.addRow(new Object[] {tr.tag, tr.getValue()});
+                }
+                
             }
             
         }
@@ -168,10 +173,14 @@ public class BridgeManager{
         for (int i = 0; i < dataDestinationRecords.size(); i++)
         {
             ProtocolRecord currentRecord = dataDestinationRecords.get(i);
-            ProtocolRecord incomingRecord = getIncomingRecordByTag(currentRecord.getTag());
-            if (incomingRecord != null)
+            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
-                currentRecord.setValue(incomingRecord.getValue());
+                TagRecord currentTagRecord = currentRecord.tagRecords.get(j);
+                TagRecord incomingRecord = getIncomingRecordByTag(currentTagRecord.tag);
+                if (incomingRecord != null)
+                {
+                    currentTagRecord.setValue(incomingRecord.getValue());
+                }
             }
         }
         for (int i = 0; i < driverList.size(); i++)
@@ -181,13 +190,17 @@ public class BridgeManager{
         }
         firstRun = false;
     }
-    public ProtocolRecord getIncomingRecordByTag(String tag)
+    public TagRecord getIncomingRecordByTag(String tag)
     {
         for (int i = 0; i < dataSourceRecords.size(); i++)
         {
-            if (dataSourceRecords.get(i).getTag().equals(tag))
+            ProtocolRecord currentRecord = dataSourceRecords.get(i);
+            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
-                return dataSourceRecords.get(i);
+                if (currentRecord.tagRecords.get(j).tag.equals(tag))
+                {
+                    return currentRecord.tagRecords.get(j);
+                }
             }
         }
         return null;

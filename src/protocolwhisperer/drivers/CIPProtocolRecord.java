@@ -24,21 +24,11 @@ public class CIPProtocolRecord extends ProtocolRecord {
     public static int PROTOCOL_TYPE_CIP_WRITE = 2;
     public String host = null;
     public int port = 0;
-    public String cipTag = null;
-    double value = 0;
     public int slot = 0;
     public Class protocolHandler = CIPProtocolHandler.class;
     public CIPProtocolRecord()
     {
         
-    }
-    public CIPProtocolRecord(int aType, String aHost, int aPort, int aSlot, String aTag)
-    {
-        type = aType;
-        host = aHost;
-        port = aPort;
-        cipTag = aTag;
-        slot = aSlot;
     }
     public CIPProtocolRecord(int aType, String calledMenuItem)
     {
@@ -46,12 +36,5 @@ public class CIPProtocolRecord extends ProtocolRecord {
         type = aType;
         super.protocolHandler = protocolHandler;
     }
-    public void setValue(double aValue)
-    {
-        value = aValue;
-    }
-    public double getValue()
-    {
-        return value;
-    }
+    
 }

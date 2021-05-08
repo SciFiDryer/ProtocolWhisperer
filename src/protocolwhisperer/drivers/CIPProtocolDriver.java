@@ -26,8 +26,6 @@ import protocolwhisperer.*;
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
 public class CIPProtocolDriver implements ProtocolDriver{
-    ArrayList<CIPHostRecord> incomingHostList = new ArrayList();
-    ArrayList<CIPHostRecord> outgoingHostList = new ArrayList();
     BridgeManager manager = null;
     boolean enabled = true;
     public CIPProtocolDriver(BridgeManager aManager)
@@ -36,8 +34,6 @@ public class CIPProtocolDriver implements ProtocolDriver{
     }
     public void driverInit()
     {
-        buildIncomingHostTable();
-        buildOutgoingHostTable();
     }
     public void setEnabled(boolean aEnabled)
     {
@@ -47,62 +43,24 @@ public class CIPProtocolDriver implements ProtocolDriver{
     {
         return enabled;
     }
-    public void buildIncomingHostTable()
-    {
-        incomingHostList.clear();
-        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
-        {
-            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
-            {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
-                addToHostList(incomingHostList, currentRecord);
-            }
-        }
-    }
-    public void buildOutgoingHostTable()
-    {
-        outgoingHostList.clear();
-        for (int i = 0; i < manager.dataDestinationRecords.size(); i++)
-        {
-            if (manager.dataDestinationRecords.get(i) instanceof CIPProtocolRecord)
-            {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataDestinationRecords.get(i);
-                addToHostList(outgoingHostList, currentRecord);
-            }
-        }
-    }
-    public void addToHostList(ArrayList<CIPHostRecord> currentList, CIPProtocolRecord currentRecord)
-    {
-        boolean foundRecord = false;
-        for (int i = 0; i < currentList.size() && !foundRecord; i++)
-        {
-            if (currentRecord.type == currentList.get(i).type && currentRecord.host.equals(currentList.get(i).host) && currentRecord.port == currentList.get(i).port && currentRecord.slot == currentList.get(i).slot)
-            {
-                foundRecord = true;
-                currentList.get(i).tags.add(currentRecord.cipTag);
-            }
-        }
-        if (!foundRecord)
-        {
-            CIPHostRecord chr = new CIPHostRecord(currentRecord.type, currentRecord.host, currentRecord.port, currentRecord.slot);
-            chr.tags.add(currentRecord.cipTag);
-            currentList.add(chr);
-        }
-    }
-    public CIPData[] CIPRead(CIPHostRecord currentRecord)
+    
+    public void CIPRead(CIPProtocolRecord currentRecord)
     {
         try
         {
+            String[] tagArr = new String[currentRecord.tagRecords.size()];
+            for (int i = 0; i < currentRecord.tagRecords.size(); i++)
+            {
+                tagArr[i] = ((CIPTagRecord)currentRecord.tagRecords.get(i)).cipTag;
+            }
             EtherNetIP controller = new EtherNetIP(currentRecord.host, currentRecord.slot);
             controller.connectTcp();
-            String[] tagArr = new String[currentRecord.tags.size()];
-            for (int i = 0; i < currentRecord.tags.size(); i++)
-            {
-                tagArr[i] = currentRecord.tags.get(i);
-            }
             CIPData[] values = controller.readTags(tagArr);
             controller.close();
-            return values;
+            for (int i = 0; i < values.length; i++)
+            {
+                currentRecord.tagRecords.get(i).setValue(values[i].getNumber(0).doubleValue());
+            }
         }
         catch (Exception e)
         {
@@ -111,67 +69,23 @@ public class CIPProtocolDriver implements ProtocolDriver{
                 e.printStackTrace();
             }
         }
-        return null;
     }
-    public double[] CIPReadTags(CIPHostRecord currentRecord)
-    {
-        
-            try
-            {
-                CIPData[] values = CIPRead(currentRecord);
-                if (values != null)
-                {
-                    double[] doubleValues = new double[values.length];
-                    for (int i = 0; i < values.length; i++)
-                    {
-                        doubleValues[i] = values[i].getNumber(0).doubleValue();
-                    }
-                    return doubleValues;
-                }
-            }
-            catch(Exception e)
-            {
-                if (ProtocolWhisperer.debug)
-                {
-                    e.printStackTrace();
-                }
-            }
-            return new double[] {};
-    }
+    
     public void getIncomingRecords()
     {
-        for (int i = 0; i < incomingHostList.size(); i++)
-        {
-            incomingHostList.get(i).values = CIPReadTags(incomingHostList.get(i));
-        }
         for (int i = 0; i < manager.dataSourceRecords.size(); i++)
         {
             if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
             {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataSourceRecords.get(i);
-                for (int j = 0; j < incomingHostList.size(); j++)
-                {
-                    if (currentRecord.host.equals(incomingHostList.get(j).host) && currentRecord.port == incomingHostList.get(j).port && currentRecord.slot == incomingHostList.get(j).slot)
-                    {
-                        for (int k = 0; k < incomingHostList.get(j).tags.size(); k++)
-                        {
-                            if (incomingHostList.get(j).tags.get(k).equals(currentRecord.cipTag))
-                            {
-                                currentRecord.value = incomingHostList.get(j).values[k];
-                            }
-                        }
-                    }
-                }
+                CIPRead((CIPProtocolRecord)manager.dataSourceRecords.get(i));
             }
         }
     }
     public void mapIncomingValues()
-    {
-        
+    {   
     }
     public void shutdown()
     {
-
     }
     public void sendOutgoingRecords()
     {
@@ -180,42 +94,25 @@ public class CIPProtocolDriver implements ProtocolDriver{
             if (manager.dataDestinationRecords.get(i) instanceof CIPProtocolRecord)
             {
                 CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataDestinationRecords.get(i);
-                for (int j = 0; j < outgoingHostList.size(); j++)
-                {
-                    if (currentRecord.host.equals(outgoingHostList.get(j).host) && currentRecord.port == outgoingHostList.get(j).port && currentRecord.slot == outgoingHostList.get(j).slot)
-                    {
-                        for (int k = 0; k < outgoingHostList.get(j).tags.size(); k++)
-                        {
-                            if (outgoingHostList.get(j).tags.get(k).equals(currentRecord.cipTag))
-                            {
-                                outgoingHostList.get(j).values = Arrays.copyOf(outgoingHostList.get(j).values, k+1);
-                                outgoingHostList.get(j).values[k] = currentRecord.value;
-                            }
-                        }
-                    }
-                }
+                CIPWriteTags(currentRecord);
             }
         }
-        for (int i = 0; i < outgoingHostList.size(); i++)
-        {
-            CIPWriteTags(outgoingHostList.get(i));
-        }
     }
-    public void CIPWriteTags(CIPHostRecord currentRecord)
+    public void CIPWriteTags(CIPProtocolRecord currentRecord)
     {
         try
         {
-            CIPData[] values = CIPRead(currentRecord);
-            for (int i = 0; i < values.length; i++)
-            {
-                values[i].set(0, currentRecord.values[i]);
-            }
             EtherNetIP controller = new EtherNetIP(currentRecord.host, currentRecord.slot);
             controller.connectTcp();
-            String[] tagArr = new String[currentRecord.tags.size()];
-            for (int i = 0; i < currentRecord.tags.size(); i++)
+            String[] tagArr = new String[currentRecord.tagRecords.size()];
+            for (int i = 0; i < currentRecord.tagRecords.size(); i++)
             {
-                tagArr[i] = currentRecord.tags.get(i);
+                tagArr[i] = ((CIPTagRecord)currentRecord.tagRecords.get(i)).cipTag;
+            }
+            CIPData[] values = controller.readTags(tagArr);
+            for (int i = 0; i < values.length; i++)
+            {
+                values[i].set(0, currentRecord.tagRecords.get(i).getValue());
             }
             controller.writeTags(tagArr, values);
             controller.close();

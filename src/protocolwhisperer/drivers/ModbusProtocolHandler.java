@@ -60,15 +60,15 @@ public class ModbusProtocolHandler implements ProtocolHandler{
     
     public static String getMenuItemFromFormat(int format)
     {
-        if (format == ModbusProtocolRecord.FORMAT_TYPE_FLOAT)
+        if (format == ModbusTagRecord.FORMAT_TYPE_FLOAT)
         {
             return dataTypeMenuNames[1];
         }
-        else if (format == ModbusProtocolRecord.FORMAT_TYPE_UINT_16)
+        else if (format == ModbusTagRecord.FORMAT_TYPE_UINT_16)
         {
             return dataTypeMenuNames[2];
         }
-        else if (format == ModbusProtocolRecord.FORMAT_TYPE_UINT_32)
+        else if (format == ModbusTagRecord.FORMAT_TYPE_UINT_32)
         {
             return dataTypeMenuNames[3];
         }
@@ -79,15 +79,15 @@ public class ModbusProtocolHandler implements ProtocolHandler{
         int format = 0;
         if (menuItem.equals(dataTypeMenuNames[1]))
         {
-            format = ModbusProtocolRecord.FORMAT_TYPE_FLOAT;
+            format = ModbusTagRecord.FORMAT_TYPE_FLOAT;
         }
         else if (menuItem.equals(dataTypeMenuNames[2]))
         {
-            format = ModbusProtocolRecord.FORMAT_TYPE_UINT_16;
+            format = ModbusTagRecord.FORMAT_TYPE_UINT_16;
         }
         else if (menuItem.equals(dataTypeMenuNames[3]))
         {
-            format = ModbusProtocolRecord.FORMAT_TYPE_UINT_32;
+            format = ModbusTagRecord.FORMAT_TYPE_UINT_32;
         }
         return format;
     }

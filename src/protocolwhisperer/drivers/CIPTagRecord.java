@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Matt Jamesson <scifidryer@gmail.com>.
+ * Copyright 2021 Matt Jamesson <scifidryer@gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,15 @@ package protocolwhisperer.drivers;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-import java.util.*;
-public abstract class ProtocolRecord {
-    public static int RECORD_TYPE_INCOMING = 1;
-    public static int RECORD_TYPE_OUTGOING = 2;
-    int type = 0;
-    public String selectedItem = "";
-    public boolean configured = false;
-    public Class protocolHandler = null;
-    public ArrayList<TagRecord> tagRecords = new ArrayList();
-    public int getType()
+public class CIPTagRecord extends TagRecord {
+    public String cipTag = null;
+    double value = 0;
+    public void setValue(double aValue)
     {
-        return type;
+        value = aValue;
     }
-    public void setType(int aType)
+    public double getValue()
     {
-        type = aType;
+        return value;
     }
 }
