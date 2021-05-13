@@ -26,8 +26,7 @@ public abstract class ProtocolRecord {
     int type = 0;
     public String selectedItem = "";
     public boolean configured = false;
-    public Class protocolHandler = null;
-    public ArrayList<TagRecord> tagRecords = new ArrayList();
+    public ArrayList<TagRecord> tagRecords = new ArrayList<TagRecord>();
     public int getType()
     {
         return type;
@@ -36,4 +35,5 @@ public abstract class ProtocolRecord {
     {
         type = aType;
     }
+    public abstract Class getProtocolHandlerClass();
 }

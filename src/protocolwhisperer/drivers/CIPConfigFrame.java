@@ -65,6 +65,7 @@ public class CIPConfigFrame extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(70, 0), new java.awt.Dimension(70, 0), new java.awt.Dimension(70, 32767));
         jScrollPane1 = new javax.swing.JScrollPane();
+        tagRecordParent = new javax.swing.JPanel();
         tagRecordPane = new javax.swing.JPanel();
         okPane = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
@@ -111,8 +112,12 @@ public class CIPConfigFrame extends javax.swing.JFrame {
 
         getContentPane().add(topPane, java.awt.BorderLayout.NORTH);
 
+        tagRecordParent.setLayout(new java.awt.BorderLayout());
+
         tagRecordPane.setLayout(new javax.swing.BoxLayout(tagRecordPane, javax.swing.BoxLayout.Y_AXIS));
-        jScrollPane1.setViewportView(tagRecordPane);
+        tagRecordParent.add(tagRecordPane, java.awt.BorderLayout.NORTH);
+
+        jScrollPane1.setViewportView(tagRecordParent);
 
         getContentPane().add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -126,7 +131,7 @@ public class CIPConfigFrame extends javax.swing.JFrame {
 
         getContentPane().add(okPane, java.awt.BorderLayout.SOUTH);
 
-        setBounds(0, 0, 428, 268);
+        setBounds(0, 0, 332, 268);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -225,6 +230,7 @@ public class CIPConfigFrame extends javax.swing.JFrame {
     private javax.swing.JButton okButton;
     private javax.swing.JPanel okPane;
     private javax.swing.JPanel tagRecordPane;
+    private javax.swing.JPanel tagRecordParent;
     private javax.swing.JPanel topPane;
     // End of variables declaration//GEN-END:variables
 }

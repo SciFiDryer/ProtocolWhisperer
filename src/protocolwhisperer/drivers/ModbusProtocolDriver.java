@@ -38,16 +38,13 @@ import protocolwhisperer.*;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class ModbusProtocolDriver implements ProtocolDriver{
+public class ModbusProtocolDriver extends ProtocolDriver{
     boolean enabled = false;
     ArrayList<ModbusHostRecord> incomingSlaveList = new ArrayList();
     ArrayList<ModbusHostRecord> outgoingSlaveList = new ArrayList();
     ArrayList<LocalModbusSlave> localRunningSlaves = new ArrayList();
-    BridgeManager manager = null;
-    public ModbusProtocolDriver(BridgeManager aManager)
-    {
-        manager = aManager;
-    }
+    boolean outgoingSlavesStarted = false;
+    boolean incomingSlavesStarted = false;
     public boolean getEnabled()
     {
         return enabled;
@@ -58,36 +55,50 @@ public class ModbusProtocolDriver implements ProtocolDriver{
     }
     public void driverInit()
     {
-        buildIncomingSlaveTable();
-        buildOutgoingSlaveTable();
-        startLocalSlaves();
+        recordList.clear();
+        incomingSlaveList.clear();
+        outgoingSlaveList.clear();
+    }
+    public Class getProtocolRecordClass()
+    {
+        return ModbusProtocolRecord.class;
     }
     public void getIncomingRecords()
     {
-        buildIncomingSlaveTable();
+        startLocalIncomingSlaves();
         fetchIncomingData();
     }
     public void sendOutgoingRecords()
     {
-        buildOutgoingSlaveTable();
         sendOutgoingData();
     }
-    public void startLocalSlaves()
+    public void startLocalIncomingSlaves()
     {
-        for (int i = 0; i < incomingSlaveList.size(); i++)
+        if (!incomingSlavesStarted)
         {
-            if (incomingSlaveList.get(i).hostType == ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE)
+            for (int i = 0; i < incomingSlaveList.size(); i++)
             {
-                startLocalSlave(incomingSlaveList.get(i));
+                if (incomingSlaveList.get(i).hostType == ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE)
+                {
+                    startLocalSlave(incomingSlaveList.get(i));
+                }
             }
         }
-        for (int i = 0; i < outgoingSlaveList.size(); i++)
+        incomingSlavesStarted = true;
+    }
+    public void startLocalOutgoingSlaves()
+    {
+        if (!outgoingSlavesStarted)
         {
-            if (outgoingSlaveList.get(i).hostType == ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE)
+            for (int i = 0; i < outgoingSlaveList.size(); i++)
             {
-                startLocalSlave(outgoingSlaveList.get(i));
+                if (outgoingSlaveList.get(i).hostType == ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE)
+                {
+                    startLocalSlave(outgoingSlaveList.get(i));
+                }
             }
         }
+        outgoingSlavesStarted = true;
     }
     public void startLocalSlave(ModbusHostRecord slaveRecord)
     {
@@ -158,8 +169,7 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             public void writeCoilRange(int offset, boolean[] range) throws IllegalDataAddressException, IllegalDataValueException {
                 super.writeCoilRange(offset, range);
             }};
-            
-            
+
             dh.setHoldingRegisters(hr);
             dh.setInputRegisters(ir);
             slave.setDataHolder(dh);
@@ -179,15 +189,27 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             rr.value = Arrays.copyOfRange(target, rr.register*2, (rr.register*2)+2);
         }
     }
-    public void buildIncomingSlaveTable()
+    
+    public void storeProtocolRecord(ProtocolRecord pr)
     {
-        incomingSlaveList.clear();
-        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
+        ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)pr;
+        recordList.add(pr);
+        //we maintain concurrent lists here so also build the modbus maps
+        if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_INCOMING)
         {
-            if (manager.dataSourceRecords.get(i) instanceof ModbusProtocolRecord)
+            addToModbusList(incomingSlaveList, currentRecord);
+        }
+        
+    }
+    public void updateOutgoingSlaves()
+    {
+        outgoingSlaveList.clear();
+        for (int i = 0; i < recordList.size(); i++)
+        {
+            ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)recordList.get(i);
+            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_OUTGOING)
             {
-                ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)manager.dataSourceRecords.get(i);
-                addToModbusList(incomingSlaveList, currentRecord);
+                addToModbusList(outgoingSlaveList, currentRecord);
             }
         }
     }
@@ -426,15 +448,15 @@ public class ModbusProtocolDriver implements ProtocolDriver{
     }
     public void mapIncomingValues()
     {
-        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
+        for (int i = 0; i < recordList.size(); i++)
         {
-            if (manager.dataSourceRecords.get(i) instanceof ModbusProtocolRecord)
+            ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)recordList.get(i);
+            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_INCOMING)
             {
-                ModbusProtocolRecord incomingRecord = (ModbusProtocolRecord)manager.dataSourceRecords.get(i);
-                for (int j = 0; j < incomingRecord.tagRecords.size(); j++)
+                for (int j = 0; j < currentRecord.tagRecords.size(); j++)
                 {
-                    ModbusTagRecord currentTag = (ModbusTagRecord)incomingRecord.tagRecords.get(i);
-                    currentTag.rawValue = getModbusValue(incomingRecord.slaveHost, incomingRecord.slavePort, currentTag.functionCode, currentTag.startingRegister, currentTag.quantity);
+                    ModbusTagRecord currentTag = (ModbusTagRecord)currentRecord.tagRecords.get(i);
+                    currentTag.rawValue = getModbusValue(currentRecord.slaveHost, currentRecord.slavePort, currentTag.functionCode, currentTag.startingRegister, currentTag.quantity);
                 }
             }
         }
@@ -476,22 +498,11 @@ public class ModbusProtocolDriver implements ProtocolDriver{
         }
         return null;
     }
-    public void buildOutgoingSlaveTable()
-    {
-        outgoingSlaveList.clear();
-        for (int i = 0; i < manager.dataDestinationRecords.size(); i++)
-        {
-            if (manager.dataDestinationRecords.get(i) instanceof ModbusProtocolRecord)
-            {
-                ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)manager.dataDestinationRecords.get(i);
-                
-                addToModbusList(outgoingSlaveList, currentRecord);
-            }
-        }
-    }
     
     public void sendOutgoingData()
     {
+        updateOutgoingSlaves();
+        startLocalOutgoingSlaves();
         for (int i = 0; i < outgoingSlaveList.size(); i++)
         {
             ModbusHostRecord currentRecord = outgoingSlaveList.get(i);
@@ -579,6 +590,10 @@ public class ModbusProtocolDriver implements ProtocolDriver{
 
             try
             {
+                if (ProtocolWhisperer.debug)
+                {
+                    System.out.println("Modbus master request to " + currentSlave.hostname + " function 3 register " + startingRegister + " length " + quantity + " byte length " + values.length);
+                }
                 response = generateModbusMessage(master, 0, 1, currentSlave.node, 16, startingRegister, quantity, values);
             }
             catch(Exception e)
@@ -630,6 +645,8 @@ public class ModbusProtocolDriver implements ProtocolDriver{
             try
             {
                 localRunningSlaves.get(i).localSlave.shutdown();
+                outgoingSlavesStarted = false;
+                incomingSlavesStarted = false;
             }
             catch(Exception e)
             {

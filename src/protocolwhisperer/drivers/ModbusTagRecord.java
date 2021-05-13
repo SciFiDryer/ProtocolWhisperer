@@ -26,7 +26,7 @@ public class ModbusTagRecord extends TagRecord {
     double numericValue = 0;
     public int startingRegister = 0;
     public int quantity = 0;
-    int formatType = 0;
+    public int formatType = 0;
     public int functionCode = 0;
     public static int FORMAT_TYPE_RAW = 1;
     public static int FORMAT_TYPE_FLOAT = 2;

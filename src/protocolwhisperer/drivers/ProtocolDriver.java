@@ -14,18 +14,28 @@
  * limitations under the License.
  */
 package protocolwhisperer.drivers;
-
+import protocolwhisperer.*;
+import java.util.*;
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public interface ProtocolDriver {
-    public boolean getEnabled();
-    public void setEnabled(boolean enabled);
-    public void driverInit();
-    public void getIncomingRecords();
-    public void sendOutgoingRecords();
-    public void mapIncomingValues();
-    public void shutdown();
-    public Class getProtocolHandlerClass();
+public abstract class ProtocolDriver {
+    protected ArrayList<ProtocolRecord> recordList = new ArrayList<ProtocolRecord>();
+    public abstract boolean getEnabled();
+    public abstract void setEnabled(boolean enabled); 
+    public void driverInit()
+    {
+        recordList.clear();
+    }
+    public abstract void getIncomingRecords();
+    public abstract void sendOutgoingRecords();
+    public abstract void mapIncomingValues();
+    public void shutdown()
+    {
+        recordList.clear();
+    }
+    public abstract Class getProtocolHandlerClass();
+    public abstract Class getProtocolRecordClass();
+    public abstract void storeProtocolRecord(ProtocolRecord currentRecord);
 }

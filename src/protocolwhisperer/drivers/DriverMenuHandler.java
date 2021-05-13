@@ -52,6 +52,26 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     }
     public void loadDrivers()
     {
+        ServiceLoader<ProtocolDriver> driverLoader = ServiceLoader.load(ProtocolDriver.class);
+        Iterator drivers = driverLoader.iterator();
+        while (drivers.hasNext())
+        {
+            try
+            {
+                ProtocolDriver currentDriver = (ProtocolDriver)drivers.next();
+                parentFrame.manager.getDriverList().add(currentDriver);
+                ProtocolHandler currentHandler = (ProtocolHandler)currentDriver.getProtocolHandlerClass().getDeclaredConstructor().newInstance();
+                
+                driverList.add(currentHandler);
+            }
+            catch(Exception e)
+            {
+                if (ProtocolWhisperer.debug)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
         driverList.add(new ModbusProtocolHandler());
         driverList.add(new CIPProtocolHandler());
         ArrayList<String> menuItems = new ArrayList();
@@ -105,7 +125,7 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
         currentPanel.add(new JLabel(currentRecord.selectedItem));
         
         JButton configButton = new JButton("Configure");
-        ProtocolHandler currentHandler = getProtocolHandler(currentRecord.protocolHandler);
+        ProtocolHandler currentHandler = getProtocolHandler(currentRecord.getProtocolHandlerClass());
         configButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)

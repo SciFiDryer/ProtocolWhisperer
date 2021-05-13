@@ -32,12 +32,15 @@ public class ModbusProtocolRecord extends ProtocolRecord {
     public ModbusProtocolRecord()
     {  
     }
+    public Class getProtocolHandlerClass()
+    {
+        return protocolHandler;
+    }
     public ModbusProtocolRecord(int aType, int aProtocolType, String calledMenuItem)
     {
         type = aType;
         protocolType = aProtocolType;
         selectedItem = calledMenuItem;
-        super.protocolHandler = protocolHandler;
     }
     
     public void setProtocolType(int aProtocolType)

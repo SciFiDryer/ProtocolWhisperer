@@ -30,11 +30,14 @@ public class CIPProtocolRecord extends ProtocolRecord {
     {
         
     }
+    public Class getProtocolHandlerClass()
+    {
+        return protocolHandler;
+    }
     public CIPProtocolRecord(int aType, String calledMenuItem)
     {
         selectedItem = calledMenuItem;
         type = aType;
-        super.protocolHandler = protocolHandler;
     }
     
 }

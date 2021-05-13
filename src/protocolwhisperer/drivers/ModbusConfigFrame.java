@@ -148,11 +148,11 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
         headerPane = new javax.swing.JPanel();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
         jLabel1 = new javax.swing.JLabel();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(100, 0), new java.awt.Dimension(100, 0), new java.awt.Dimension(10, 32767));
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(70, 0), new java.awt.Dimension(70, 0), new java.awt.Dimension(10, 32767));
         jLabel4 = new javax.swing.JLabel();
-        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(50, 0), new java.awt.Dimension(50, 0), new java.awt.Dimension(50, 32767));
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(40, 0), new java.awt.Dimension(40, 0), new java.awt.Dimension(40, 32767));
         jLabel5 = new javax.swing.JLabel();
-        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(30, 0), new java.awt.Dimension(30, 0), new java.awt.Dimension(30, 32767));
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
         jLabel6 = new javax.swing.JLabel();
         tagParentPane = new javax.swing.JScrollPane();
         jPanel2 = new javax.swing.JPanel();
@@ -225,7 +225,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
         jPanel2.setLayout(new java.awt.BorderLayout());
 
         tagRecordPane.setLayout(new javax.swing.BoxLayout(tagRecordPane, javax.swing.BoxLayout.Y_AXIS));
-        jPanel2.add(tagRecordPane, java.awt.BorderLayout.CENTER);
+        jPanel2.add(tagRecordPane, java.awt.BorderLayout.NORTH);
 
         tagParentPane.setViewportView(jPanel2);
 
@@ -241,7 +241,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
 
         getContentPane().add(okPane, java.awt.BorderLayout.SOUTH);
 
-        setBounds(0, 0, 778, 325);
+        setBounds(0, 0, 591, 325);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed

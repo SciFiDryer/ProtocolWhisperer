@@ -78,8 +78,8 @@ public class BridgeManager{
             bridgeFrame = new MainFrame(this);
             bridgeFrame.setVisible(true);
         }
-        driverList.add(new ModbusProtocolDriver(this));
-        driverList.add(new CIPProtocolDriver(this));
+        driverList.add(new ModbusProtocolDriver());
+        driverList.add(new CIPProtocolDriver());
         if (headless)
         {
             loadConfig(new File(fileName));
@@ -133,17 +133,29 @@ public class BridgeManager{
     {
         if (firstRun)
         {
+            //do first run init and build respective protocol record lists
             for (int i = 0; i < driverList.size(); i++)
             {
                 ProtocolDriver currentDriver = driverList.get(i);
                 currentDriver.driverInit();
             }
+            for (int i = 0; i < dataSourceRecords.size(); i++)
+            {
+                ProtocolRecord pr = dataSourceRecords.get(i);
+                processProtocolRecord(pr);
+            }
+            for (int i = 0; i < dataDestinationRecords.size(); i++)
+            {
+                ProtocolRecord pr = dataDestinationRecords.get(i);
+                processProtocolRecord(pr);
+            }
         }
-        //get incoming records
+        //map the incoming values if the driver needs to
         for (int i = 0; i < driverList.size(); i++)
         {
             ProtocolDriver currentDriver = driverList.get(i);
             currentDriver.getIncomingRecords();
+            currentDriver.mapIncomingValues();
         }
         if (!headless)
         {
@@ -160,15 +172,7 @@ public class BridgeManager{
                     TagRecord tr = pr.tagRecords.get(j);
                     model.addRow(new Object[] {tr.tag, tr.getValue()});
                 }
-                
             }
-            
-        }
-        
-        for (int i = 0; i < driverList.size(); i++)
-        {
-            ProtocolDriver currentDriver = driverList.get(i);
-            currentDriver.mapIncomingValues();
         }
         for (int i = 0; i < dataDestinationRecords.size(); i++)
         {
@@ -216,6 +220,17 @@ public class BridgeManager{
         for (int i = 0; i < dataDestinationRecords.size(); i++)
         {
             dmh.constructGuiRecord(dataDestinationRecords.get(i));
+        }
+    }
+    public void processProtocolRecord(ProtocolRecord currentRecord)
+    {
+        for (int i = 0; i < driverList.size(); i++)
+        {
+            ProtocolDriver currentDriver = driverList.get(i);
+            if (currentDriver.getProtocolRecordClass().isInstance(currentRecord))
+            {
+                currentDriver.storeProtocolRecord(currentRecord);
+            }
         }
     }
     public ProtocolHandler getHandlerForDriver(String driverSelection)

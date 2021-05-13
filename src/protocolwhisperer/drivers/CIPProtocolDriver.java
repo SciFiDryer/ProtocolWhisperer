@@ -25,15 +25,12 @@ import protocolwhisperer.*;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class CIPProtocolDriver implements ProtocolDriver{
-    BridgeManager manager = null;
+public class CIPProtocolDriver extends ProtocolDriver{
     boolean enabled = true;
-    public CIPProtocolDriver(BridgeManager aManager)
-    {
-        manager = aManager;
-    }
+
     public void driverInit()
     {
+        recordList.clear();
     }
     public void setEnabled(boolean aEnabled)
     {
@@ -70,14 +67,22 @@ public class CIPProtocolDriver implements ProtocolDriver{
             }
         }
     }
-    
+    public void storeProtocolRecord(ProtocolRecord pr)
+    {
+        recordList.add(pr);
+    }
     public void getIncomingRecords()
     {
-        for (int i = 0; i < manager.dataSourceRecords.size(); i++)
+        for (int i = 0; i < recordList.size(); i++)
         {
-            if (manager.dataSourceRecords.get(i) instanceof CIPProtocolRecord)
+            CIPProtocolRecord currentRecord = (CIPProtocolRecord)recordList.get(i);
+            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_INCOMING)
             {
-                CIPRead((CIPProtocolRecord)manager.dataSourceRecords.get(i));
+                CIPRead(currentRecord);
+            }
+            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_OUTGOING)
+            {
+                CIPWriteTags(currentRecord);
             }
         }
     }
@@ -89,14 +94,7 @@ public class CIPProtocolDriver implements ProtocolDriver{
     }
     public void sendOutgoingRecords()
     {
-        for (int i = 0; i < manager.dataDestinationRecords.size(); i++)
-        {
-            if (manager.dataDestinationRecords.get(i) instanceof CIPProtocolRecord)
-            {
-                CIPProtocolRecord currentRecord = (CIPProtocolRecord)manager.dataDestinationRecords.get(i);
-                CIPWriteTags(currentRecord);
-            }
-        }
+      
     }
     public void CIPWriteTags(CIPProtocolRecord currentRecord)
     {
@@ -128,5 +126,9 @@ public class CIPProtocolDriver implements ProtocolDriver{
     public Class getProtocolHandlerClass()
     {
         return CIPProtocolHandler.class;
+    }
+    public Class getProtocolRecordClass()
+    {
+        return CIPProtocolRecord.class;
     }
 }
