@@ -37,5 +37,8 @@ public abstract class ProtocolDriver {
     }
     public abstract Class getProtocolHandlerClass();
     public abstract Class getProtocolRecordClass();
-    public abstract void storeProtocolRecord(ProtocolRecord currentRecord);
+    public void storeProtocolRecord(ProtocolRecord currentRecord)
+    {
+        recordList.add(currentRecord);
+    }
 }

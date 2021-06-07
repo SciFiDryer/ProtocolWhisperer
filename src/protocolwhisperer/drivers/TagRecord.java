@@ -21,7 +21,7 @@ package protocolwhisperer.drivers;
  */
 public abstract class TagRecord {
         public String tag = "";
-        double value = 0;
+        protected double value = 0;
         public boolean configured = false;
         public abstract void setValue(double value);
         public abstract double getValue();
