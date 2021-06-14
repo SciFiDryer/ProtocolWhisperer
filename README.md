@@ -35,7 +35,7 @@ This is a NetBeans project. It can be built by pulling it in the NetBeans IDE or
 
 ## Latest release
 
-[ProtocolWhisperer.v0.1.zip](https://github.com/SciFiDryer/ProtocolWhisperer/releases/download/v0.1/ProtocolWhisperer.v0.1.zip)
+[ProtocolWhisperer.v0.2.zip](https://github.com/SciFiDryer/ProtocolWhisperer/releases/download/v0.2/ProtocolWhisperer.v0.2.zip)
 
 ## Completed features and planned features
 
