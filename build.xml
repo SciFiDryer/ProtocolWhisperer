@@ -75,6 +75,7 @@
         <copy file="library notices/NOTICE" todir="${dist.dir}/lib"/>
         <copy file="library notices/ETHERIP-EPL" todir="${dist.dir}/lib"/>
         <copy file="Running on MacOS X" todir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/plugins"/>
     </target>
     <target name="-post-jar">
         <delete file="${dist.dir}/README.TXT"/>

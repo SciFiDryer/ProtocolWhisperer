@@ -18,6 +18,8 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.util.*;
+import java.io.*;
+import java.net.*;
 import protocolwhisperer.*;
 /**
  *
@@ -52,6 +54,34 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     }
     public void loadDrivers()
     {
+        try
+        {
+        
+            File workingDir = new File(DriverMenuHandler.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+            if (workingDir.isFile())
+            {
+                workingDir = new File(workingDir.getParent());
+            }
+            File pluginDir = new File(workingDir.getPath() + File.separator + "plugins");
+            if (pluginDir.exists() && pluginDir.isDirectory())
+            {
+                File[] fileList = pluginDir.listFiles();
+                URL[] jarList = new URL[fileList.length];
+                for (int i = 0; i < fileList.length; i++)
+                {
+                    jarList[i] = fileList[i].toURI().toURL();
+                }
+                URLClassLoader classLoader = new URLClassLoader(jarList, ClassLoader.getSystemClassLoader());
+                Thread.currentThread().setContextClassLoader(classLoader);
+            }
+        }
+        catch (Exception e)
+        {
+            if (ProtocolWhisperer.debug)
+            {
+                e.printStackTrace();
+            }
+        }
         ServiceLoader<ProtocolDriver> driverLoader = ServiceLoader.load(ProtocolDriver.class);
         Iterator drivers = driverLoader.iterator();
         while (drivers.hasNext())
