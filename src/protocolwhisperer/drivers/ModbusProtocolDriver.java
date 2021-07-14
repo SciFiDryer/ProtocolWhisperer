@@ -378,15 +378,17 @@ public class ModbusProtocolDriver extends ProtocolDriver{
         {
             startingRegister = registers[j];
             quantity = 1;
-            for (int k = 0; k < 128 && k+j < registers.length; k++)
+            int lastIndex = j;
+            for (int k = j; k < registers.length; k++)
             {
-                int calcDistance = registers[j+k]-registers[j] + 1;
+                int calcDistance = registers[k]-registers[j];
                 if (calcDistance < 128)
                 {
-                    quantity = calcDistance;
-                    j = j+k;
+                    quantity = calcDistance + 1;
+                    lastIndex = k;
                 }
             }
+            j = lastIndex;
             try 
             {
                 if (ProtocolWhisperer.debug)
@@ -455,7 +457,7 @@ public class ModbusProtocolDriver extends ProtocolDriver{
             {
                 for (int j = 0; j < currentRecord.tagRecords.size(); j++)
                 {
-                    ModbusTagRecord currentTag = (ModbusTagRecord)currentRecord.tagRecords.get(i);
+                    ModbusTagRecord currentTag = (ModbusTagRecord)currentRecord.tagRecords.get(j);
                     currentTag.rawValue = getModbusValue(currentRecord.slaveHost, currentRecord.slavePort, currentTag.functionCode, currentTag.startingRegister, currentTag.quantity);
                 }
             }
@@ -465,7 +467,6 @@ public class ModbusProtocolDriver extends ProtocolDriver{
     {
         for (int i = 0; i < incomingSlaveList.size(); i++)
         {
-            
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             ModbusHostRecord currentSlave = incomingSlaveList.get(i);
             if (currentSlave.port == port && (currentSlave.hostType == ModbusHostRecord.HOST_TYPE_LOCAL_SLAVE || (currentSlave.hostname.equals(host) && currentSlave.hostType == ModbusHostRecord.HOST_TYPE_REMOTE_SLAVE)) )

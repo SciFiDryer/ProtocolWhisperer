@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 package protocolwhisperer.drivers;
-import java.util.*;
+
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public abstract class TagRecord {
-        public String tag = "";
-        protected double value = 0;
-        public boolean configured = false;
-        public abstract void setValue(double value);
-        public abstract double getValue();
-        public String guid = "";
-        public TagRecord()
-        {
-            guid = UUID.randomUUID().toString();
-        }
+public class StaticTagRecord extends TagRecord {
+    double value = 0;
+    public void setValue(double aValue)
+    {
+        value = aValue;
+    }
+    public double getValue()
+    {
+        return value;
+    }
 }
-    

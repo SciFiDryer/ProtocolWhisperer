@@ -16,6 +16,7 @@
 package protocolwhisperer.drivers;
 import javax.swing.*;
 import java.util.*;
+import protocolwhisperer.*;
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
@@ -28,8 +29,10 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
     static String[] dataTypeMenuNames = new String[] {"Select data type", "Float", "Unsigned Int16", "Unsigned Int32"};
     ModbusProtocolRecord currentRecord = null;
     ArrayList<TagMapper> tagGuiRecords = new ArrayList();
-    public ModbusConfigFrame(ModbusProtocolRecord aCurrentRecord) {
+    BridgeManager manager = null;
+    public ModbusConfigFrame(ModbusProtocolRecord aCurrentRecord, BridgeManager aManager) {
         initComponents();
+        manager = aManager;
         currentRecord = aCurrentRecord;
         
         if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_SLAVE)
@@ -45,7 +48,8 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
             }
             portField.setText(currentRecord.slavePort + "");
             idField.setText(currentRecord.node + "");
-            buildTagRecords(currentRecord.tagRecords); 
+            buildTagRecords(currentRecord.tagRecords);
+            
         }
     }
     public void buildTagRecords(ArrayList<TagRecord> tagRecords)
@@ -56,31 +60,50 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
             buildTagRecord(currentRecord);
         }
     }
-    public void buildTagRecord(ModbusTagRecord currentRecord)
+    public void buildTagRecord(ModbusTagRecord currentTagRecord)
     {
         JPanel currentTagPane = new JPanel();
-        JTextField tagField = new JTextField(10);
+        final java.awt.Component tagField;
+        if (currentRecord.type == ProtocolRecord.RECORD_TYPE_INCOMING)
+        {
+            tagField = new JTextField(10);
+            if (currentTagRecord.configured)
+            {
+                ((JTextField)(tagField)).setText(currentTagRecord.tag);
+            }
+        }
+        else
+        {
+            if (currentTagRecord.configured)
+            {
+                tagField = manager.getOutgoingRecordTags(currentTagRecord.tag);
+            }
+            else
+            {
+                tagField = manager.getOutgoingRecordTags("");
+            }
+        }
         JComboBox functionCodeSelector = new JComboBox(new String[] {"Select register type", "Holding registers", "InputRegisters"});
         JTextField registerField = new JTextField(4);
         JComboBox dataTypeSelector = new JComboBox();
         JCheckBox wordSwapCheckbox = new JCheckBox("Word swap");
         JCheckBox byteSwapCheckbox = new JCheckBox("Byte swap");
         dataTypeSelector.setModel(new DefaultComboBoxModel(dataTypeMenuNames));
-        if (currentRecord.configured)
+        if (currentTagRecord.configured)
         {
-            tagField.setText(currentRecord.tag);
-            if (currentRecord.functionCode == 3)
+            
+            if (currentTagRecord.functionCode == 3)
             {
                 functionCodeSelector.setSelectedIndex(1);
             }
-            if (currentRecord.functionCode == 4)
+            if (currentTagRecord.functionCode == 4)
             {
                 functionCodeSelector.setSelectedIndex(2);
             }
-            registerField.setText(currentRecord.startingRegister + "");
-            dataTypeSelector.setSelectedItem(ModbusProtocolHandler.getMenuItemFromFormat(currentRecord.formatType));
-            wordSwapCheckbox.setSelected(currentRecord.wordSwap);
-            byteSwapCheckbox.setSelected(currentRecord.byteSwap);
+            registerField.setText(currentTagRecord.startingRegister + "");
+            dataTypeSelector.setSelectedItem(ModbusProtocolHandler.getMenuItemFromFormat(currentTagRecord.formatType));
+            wordSwapCheckbox.setSelected(currentTagRecord.wordSwap);
+            byteSwapCheckbox.setSelected(currentTagRecord.byteSwap);
         }
         currentTagPane.add(tagField);
         currentTagPane.add(functionCodeSelector);
@@ -94,7 +117,14 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
             public ModbusTagRecord mapTagRecord()
             {
                 ModbusTagRecord outputRecord = new ModbusTagRecord();
-                outputRecord.tag = tagField.getText();
+                if (currentRecord.type == ProtocolRecord.RECORD_TYPE_INCOMING)
+                {
+                    outputRecord.tag = ((JTextField)(tagField)).getText();
+                }
+                else
+                {
+                    outputRecord.tag = manager.getGuidFromIndex(((JComboBox)(tagField)).getSelectedIndex());
+                }
                 outputRecord.startingRegister = Integer.parseInt(registerField.getText());
                 outputRecord.formatType = ModbusProtocolHandler.getFormatFromMenuItem(dataTypeSelector.getSelectedItem().toString());
                 outputRecord.quantity = 2;

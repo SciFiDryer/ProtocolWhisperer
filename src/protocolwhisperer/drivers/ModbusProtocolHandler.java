@@ -18,8 +18,8 @@ package protocolwhisperer.drivers;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
-import protocolwhisperer.BridgeEntryContainer;
-import protocolwhisperer.BridgeMappingRecord;
+import protocolwhisperer.*;
+
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
@@ -91,8 +91,8 @@ public class ModbusProtocolHandler implements ProtocolHandler{
         }
         return format;
     }
-    public void configure(ProtocolRecord currentRecord)
+    public void configure(ProtocolRecord currentRecord, BridgeManager manager)
     {
-        new ModbusConfigFrame((ModbusProtocolRecord)currentRecord).setVisible(true);
+        new ModbusConfigFrame((ModbusProtocolRecord)currentRecord, manager).setVisible(true);
     }
 }

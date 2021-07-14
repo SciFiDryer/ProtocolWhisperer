@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package protocolwhisperer.drivers;
-import java.util.*;
+package protocolwhisperer;
+
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public abstract class TagRecord {
-        public String tag = "";
-        protected double value = 0;
-        public boolean configured = false;
-        public abstract void setValue(double value);
-        public abstract double getValue();
-        public String guid = "";
-        public TagRecord()
-        {
-            guid = UUID.randomUUID().toString();
-        }
+public class BridgeOptions {
+    public boolean redundancyEnabled = false;
+    public String watchdogGuid = "";
+    public int redundancyTimeout = 0;
+    public String scriptContent = "";
 }
-    

@@ -34,9 +34,11 @@ public class MainFrame extends javax.swing.JFrame {
     public BridgeManager manager = null;
     JComboBox incomingDataSelector = null;
     JComboBox outgoingDataSelector = null;
+    JComboBox tagSelectMenu = null;
     public MainFrame(BridgeManager aManager) {
         manager = aManager;
         initComponents();
+        tagSelectMenu = manager.getOutgoingRecordTags("");
         incomingDataSelector = new JComboBox();
         outgoingDataSelector = new JComboBox();
         incomingDataSelectorPane.add(incomingDataSelector);
@@ -70,6 +72,12 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         startBridgeButton = new javax.swing.JButton();
+        jPanel7 = new javax.swing.JPanel();
+        enableRedundancy = new javax.swing.JCheckBox();
+        tagSelectPane = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        watchdogTimerField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         restIntervalField = new javax.swing.JTextField();
@@ -92,6 +100,9 @@ public class MainFrame extends javax.swing.JFrame {
         addDataDestination = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         outgoingDataPane = new javax.swing.JPanel();
+        scriptPane = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        scriptTextArea = new javax.swing.JTextArea();
         viewSourcesPane = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         valuesTable = new javax.swing.JTable();
@@ -108,6 +119,12 @@ public class MainFrame extends javax.swing.JFrame {
         });
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane1StateChanged(evt);
+            }
+        });
+
         generalPane.setLayout(new javax.swing.BoxLayout(generalPane, javax.swing.BoxLayout.Y_AXIS));
 
         jPanel1.add(jSeparator1);
@@ -121,6 +138,22 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel1.add(startBridgeButton);
 
         generalPane.add(jPanel1);
+
+        enableRedundancy.setText("Enable redundancy");
+        jPanel7.add(enableRedundancy);
+        jPanel7.add(tagSelectPane);
+
+        jLabel5.setText("Redundancy timer");
+        jPanel7.add(jLabel5);
+
+        watchdogTimerField.setColumns(4);
+        watchdogTimerField.setText("5000");
+        jPanel7.add(watchdogTimerField);
+
+        jLabel6.setText("ms");
+        jPanel7.add(jLabel6);
+
+        generalPane.add(jPanel7);
 
         jLabel2.setText("Rest interval");
         jPanel3.add(jLabel2);
@@ -198,6 +231,21 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Data Destinations", outgoingTabPane);
 
+        scriptPane.setLayout(new javax.swing.BoxLayout(scriptPane, javax.swing.BoxLayout.LINE_AXIS));
+
+        scriptTextArea.setColumns(20);
+        scriptTextArea.setRows(5);
+        scriptTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                scriptTextAreaKeyReleased(evt);
+            }
+        });
+        jScrollPane4.setViewportView(scriptTextArea);
+
+        scriptPane.add(jScrollPane4);
+
+        jTabbedPane1.addTab("Scripting", scriptPane);
+
         valuesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -247,13 +295,22 @@ public class MainFrame extends javax.swing.JFrame {
         setBounds(0, 0, 838, 339);
     }// </editor-fold>//GEN-END:initComponents
 
-    
+    public void updateBridgeOptions()
+    {
+        manager.options.redundancyEnabled = enableRedundancy.isSelected();
+        if (manager.options.redundancyEnabled)
+        {
+            manager.options.redundancyTimeout = Integer.parseInt(watchdogTimerField.getText());
+            manager.options.watchdogGuid = manager.getGuidFromIndex(tagSelectMenu.getSelectedIndex());
+        }
+    }
     private void startBridgeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBridgeButtonActionPerformed
         if (!manager.isRunning)
         {
             try
             {
                 manager.restTime = Integer.parseInt(restIntervalField.getText());
+                updateBridgeOptions();
             }
             catch (Exception e)
             {
@@ -295,7 +352,9 @@ public class MainFrame extends javax.swing.JFrame {
             }
             try
             {
+                updateBridgeOptions();
                 XMLEncoder xmle = new XMLEncoder(new FileOutputStream(f));
+                xmle.writeObject(manager.options);
                 xmle.writeObject(manager.dataSourceRecords);
                 xmle.writeObject(manager.dataDestinationRecords);
                 xmle.close();
@@ -346,6 +405,19 @@ public class MainFrame extends javax.swing.JFrame {
         manager.dmh.dispatchDriverEvent(protocolwhisperer.drivers.ProtocolHandler.PANE_TYPE_OUTGOING, outgoingDataSelector.getSelectedItem().toString());
     }//GEN-LAST:event_addDataDestinationActionPerformed
 
+    private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+        if (jTabbedPane1.getSelectedComponent() == generalPane)
+        {
+            tagSelectPane.removeAll();
+            tagSelectMenu = manager.getOutgoingRecordTags(manager.options.watchdogGuid);
+            tagSelectPane.add(tagSelectMenu);
+        }
+    }//GEN-LAST:event_jTabbedPane1StateChanged
+
+    private void scriptTextAreaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scriptTextAreaKeyReleased
+        manager.options.scriptContent = scriptTextArea.getText();
+    }//GEN-LAST:event_scriptTextAreaKeyReleased
+
     /**
      * @param args the command line arguments
      */
@@ -354,6 +426,7 @@ public class MainFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDataDestination;
     private javax.swing.JButton addDataSource;
+    public javax.swing.JCheckBox enableRedundancy;
     private javax.swing.JPanel generalPane;
     public javax.swing.JPanel incomingDataPane;
     public javax.swing.JPanel incomingDataParent;
@@ -363,6 +436,8 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
@@ -371,9 +446,11 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JMenuItem loadConfig;
@@ -383,8 +460,12 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel outgoingTabPane;
     private javax.swing.JTextField restIntervalField;
     private javax.swing.JMenuItem saveConfig;
+    private javax.swing.JPanel scriptPane;
+    public javax.swing.JTextArea scriptTextArea;
     private javax.swing.JButton startBridgeButton;
+    public javax.swing.JPanel tagSelectPane;
     public javax.swing.JTable valuesTable;
     private javax.swing.JPanel viewSourcesPane;
+    public javax.swing.JTextField watchdogTimerField;
     // End of variables declaration//GEN-END:variables
 }

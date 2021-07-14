@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.util.*;
 import javax.swing.*;
+import javax.script.*;
 
 /**
  *
@@ -35,6 +36,7 @@ public class BridgeManager{
     public ArrayList<ProtocolRecord> dataSourceRecords = new ArrayList();
     public ArrayList<BridgeEntryContainer> dataDestinationList = new ArrayList();
     public ArrayList<ProtocolRecord> dataDestinationRecords = new ArrayList();
+    public BridgeOptions options = new BridgeOptions();
     ArrayList<ProtocolDriver> driverList = new ArrayList();
     boolean firstRun = true;
     int restTime = 1000;
@@ -43,6 +45,7 @@ public class BridgeManager{
     public DriverMenuHandler dmh = null;
     MainFrame bridgeFrame = null;
     boolean headless = false;
+    long redundancyTimerStart = 0;
     public BridgeManager(boolean aHeadless, String fileName)
     {
         headless = aHeadless;
@@ -86,6 +89,46 @@ public class BridgeManager{
             startBridge();
         }
     }
+    public JComboBox getOutgoingRecordTags(String selectedGuid)
+    {
+        ArrayList<String> menu = new ArrayList();
+        int selectedIndex = 0;
+        for (int i = 0; i < dataSourceRecords.size(); i++)
+        {
+            ProtocolRecord currentRecord = dataSourceRecords.get(i);
+            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
+            {
+                menu.add(currentRecord.tagRecords.get(j).tag);
+                if (selectedGuid.equals(currentRecord.tagRecords.get(j).guid))
+                {
+                    selectedIndex = menu.size() - 1;
+                }
+            }
+        }
+        JComboBox menuBox = new JComboBox(menu.toArray());
+        if (menu.size() > 0)
+        {
+            menuBox.setSelectedIndex(selectedIndex);
+        }
+        return menuBox;
+    }
+    public String getGuidFromIndex(int index)
+    {
+        int counter = 0;
+        for (int i = 0; i < dataSourceRecords.size(); i++)
+        {
+            ProtocolRecord currentRecord = dataSourceRecords.get(i);
+            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
+            {
+                if (index == counter)
+                {
+                    return currentRecord.tagRecords.get(j).guid;
+                }
+                counter++;
+            }
+        }
+        return "";
+    }
     public void loadConfig(File f)
     {
         try
@@ -93,6 +136,7 @@ public class BridgeManager{
             XMLDecoder xmld = new XMLDecoder(new FileInputStream(f));
             dataSourceRecords.clear();
             dataDestinationRecords.clear();
+            options = (BridgeOptions)xmld.readObject();
             dataSourceRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
             dataDestinationRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
             xmld.close();
@@ -150,13 +194,14 @@ public class BridgeManager{
                 processProtocolRecord(pr);
             }
         }
-        //map the incoming values if the driver needs to
+        //get incoming values
         for (int i = 0; i < driverList.size(); i++)
         {
             ProtocolDriver currentDriver = driverList.get(i);
             currentDriver.getIncomingRecords();
             currentDriver.mapIncomingValues();
         }
+        runScripting();
         if (!headless)
         {
             javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel)bridgeFrame.valuesTable.getModel();
@@ -174,34 +219,94 @@ public class BridgeManager{
                 }
             }
         }
-        for (int i = 0; i < dataDestinationRecords.size(); i++)
+        //check if redundancy watchdog has elapsed
+        if (options.redundancyEnabled)
         {
-            ProtocolRecord currentRecord = dataDestinationRecords.get(i);
-            for (int j = 0; j < currentRecord.tagRecords.size(); j++)
+            if (getIncomingRecordByGuid(options.watchdogGuid).getValue() == 1)
             {
-                TagRecord currentTagRecord = currentRecord.tagRecords.get(j);
-                TagRecord incomingRecord = getIncomingRecordByTag(currentTagRecord.tag);
-                if (incomingRecord != null)
+                if (redundancyTimerStart == 0)
                 {
-                    currentTagRecord.setValue(incomingRecord.getValue());
+                    System.out.println("Redundancy timeout started");
+                    redundancyTimerStart = System.currentTimeMillis();
                 }
             }
+            else
+            {
+                redundancyTimerStart = 0;
+            }
         }
-        for (int i = 0; i < driverList.size(); i++)
+        if (!options.redundancyEnabled || (redundancyTimerStart > 0 && System.currentTimeMillis() - redundancyTimerStart > options.redundancyTimeout))
         {
-            ProtocolDriver currentDriver = driverList.get(i);
-            currentDriver.sendOutgoingRecords();
+            for (int i = 0; i < dataDestinationRecords.size(); i++)
+            {
+                ProtocolRecord currentRecord = dataDestinationRecords.get(i);
+                for (int j = 0; j < currentRecord.tagRecords.size(); j++)
+                {
+                    TagRecord currentTagRecord = currentRecord.tagRecords.get(j);
+                    TagRecord incomingRecord = getIncomingRecordByGuid(currentTagRecord.tag);
+                    if (incomingRecord != null)
+                    {
+                        currentTagRecord.setValue(incomingRecord.getValue());
+                    }
+                }
+            }
+            for (int i = 0; i < driverList.size(); i++)
+            {
+                ProtocolDriver currentDriver = driverList.get(i);
+                currentDriver.sendOutgoingRecords();
+            }
         }
         firstRun = false;
     }
-    public TagRecord getIncomingRecordByTag(String tag)
+    public void runScripting()
+    {
+        if (options.scriptContent.length() > 0)
+        {
+            ScriptEngineManager engineManager = new ScriptEngineManager();
+            ScriptEngine engine = engineManager.getEngineByName("JavaScript");
+            String builtin = "function tagByName(name)"+
+                    "{"+
+                        "for (i = 0; i < tags.size(); i++)"+
+                        "{"+
+                            "if (tags.get(i).tag == name)"+
+                            "{"+
+                                "return tags.get(i);"+
+                            "}"+
+                        "}"+
+                    "}";
+            ArrayList<TagRecord> tags = new ArrayList<TagRecord>();
+            for (int i = 0; i < dataSourceRecords.size(); i++)
+            {
+                ProtocolRecord currentProtocolRecord = dataSourceRecords.get(i);
+                for (int j = 0; j < currentProtocolRecord.tagRecords.size(); j++)
+                {
+                    TagRecord currentTagRecord = currentProtocolRecord.tagRecords.get(j);
+                    tags.add(currentTagRecord);
+                }
+            }
+            try
+            {
+                engine.put("tags", tags);
+                engine.eval(builtin);
+                engine.eval(options.scriptContent);
+            }
+            catch(Exception e)
+            {
+                if (ProtocolWhisperer.debug)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public TagRecord getIncomingRecordByGuid(String guid)
     {
         for (int i = 0; i < dataSourceRecords.size(); i++)
         {
             ProtocolRecord currentRecord = dataSourceRecords.get(i);
             for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
-                if (currentRecord.tagRecords.get(j).tag.equals(tag))
+                if (currentRecord.tagRecords.get(j).guid.equals(guid))
                 {
                     return currentRecord.tagRecords.get(j);
                 }
@@ -211,6 +316,13 @@ public class BridgeManager{
     }
     public void restoreGuiFromFile()
     {
+        bridgeFrame.enableRedundancy.setSelected(options.redundancyEnabled);
+        bridgeFrame.tagSelectMenu = getOutgoingRecordTags(options.watchdogGuid);
+        bridgeFrame.scriptTextArea.setText(options.scriptContent);
+        bridgeFrame.tagSelectPane.removeAll();
+        bridgeFrame.tagSelectPane.add(bridgeFrame.tagSelectMenu);
+        bridgeFrame.repaint();
+        bridgeFrame.watchdogTimerField.setText(options.redundancyTimeout + "");
         bridgeFrame.incomingDataPane.removeAll();
         for (int i = 0; i < dataSourceRecords.size(); i++)
         {
@@ -271,7 +383,5 @@ public class BridgeManager{
         {
             driverList.get(i).shutdown();
         }
-    }
-    
-    
+    }  
 }

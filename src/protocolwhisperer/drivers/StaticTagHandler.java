@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Matt Jamesson <scifidryer@gmail.com>.
+ * Copyright 2021 Matt Jamesson <scifidryer@gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,25 @@
  */
 package protocolwhisperer.drivers;
 import protocolwhisperer.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class CIPProtocolHandler implements ProtocolHandler{
-    String[] incomingMenuNames = new String[] {"CIP Read Tag"};
-    String[] outgoingMenuNames = new String[] {"CIP Write Tag"};
-    
+public class StaticTagHandler implements ProtocolHandler{
     public ProtocolRecord getNewProtocolRecord(int type, String calledMenuItem)
     {
-        return new CIPProtocolRecord(type, calledMenuItem);
+        return new StaticTagProtocolRecord(type, calledMenuItem);
     }
     public String[] getIncomingMenuNames()
     {
-        return incomingMenuNames;
+        return new String[] {"Static tags"};
     }
     public String[] getOutgoingMenuNames()
     {
-        return outgoingMenuNames;
+        return new String[] {};
     }
     public void configure(ProtocolRecord currentRecord, BridgeManager manager)
     {
-        new CIPConfigFrame((CIPProtocolRecord)currentRecord, manager).setVisible(true);
+        new StaticTagConfigFrame((StaticTagProtocolRecord)currentRecord, manager).setVisible(true);
     }
 }

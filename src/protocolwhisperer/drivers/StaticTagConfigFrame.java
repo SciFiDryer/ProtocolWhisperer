@@ -25,22 +25,20 @@ import protocolwhisperer.*;
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class CIPConfigFrame extends javax.swing.JFrame {
+public class StaticTagConfigFrame extends javax.swing.JFrame {
 
     /**
      * Creates new form CIPConfigFrame
      */
-    CIPProtocolRecord currentRecord = null;
+    StaticTagProtocolRecord currentRecord = null;
     ArrayList<TagMapper> tagGuiRecords = new ArrayList();
     BridgeManager manager = null;
-    public CIPConfigFrame(CIPProtocolRecord aCurrentRecord, BridgeManager aManager) {
+    public StaticTagConfigFrame(StaticTagProtocolRecord aCurrentRecord, BridgeManager aManager) {
         initComponents();
         currentRecord = aCurrentRecord;
         manager = aManager;
         if (currentRecord.configured)
         {
-            cipHostField.setText(currentRecord.host);
-            cipSlotField.setText(currentRecord.slot + "");
             buildTagRecords(currentRecord.tagRecords); 
         }
     }
@@ -55,11 +53,6 @@ public class CIPConfigFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         topPane = new javax.swing.JPanel();
-        configPane = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        cipHostField = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        cipSlotField = new javax.swing.JTextField();
         addTagPane = new javax.swing.JPanel();
         addTagButton = new javax.swing.JButton();
         headerPane = new javax.swing.JPanel();
@@ -77,22 +70,6 @@ public class CIPConfigFrame extends javax.swing.JFrame {
 
         topPane.setLayout(new javax.swing.BoxLayout(topPane, javax.swing.BoxLayout.Y_AXIS));
 
-        jLabel1.setText("CIP Host:");
-        configPane.add(jLabel1);
-
-        cipHostField.setColumns(10);
-        configPane.add(cipHostField);
-
-        jLabel3.setText("Slot:");
-        configPane.add(jLabel3);
-
-        cipSlotField.setColumns(2);
-        cipSlotField.setText("0");
-        cipSlotField.setToolTipText("");
-        configPane.add(cipSlotField);
-
-        topPane.add(configPane);
-
         addTagButton.setText("Add tag");
         addTagButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -107,7 +84,7 @@ public class CIPConfigFrame extends javax.swing.JFrame {
         headerPane.add(jLabel2);
         headerPane.add(filler1);
 
-        jLabel4.setText("CIP Tag");
+        jLabel4.setText("Initial value");
         headerPane.add(jLabel4);
         headerPane.add(filler2);
 
@@ -138,15 +115,13 @@ public class CIPConfigFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        currentRecord.host = cipHostField.getText();
-        currentRecord.slot = Integer.parseInt(cipSlotField.getText());
         currentRecord.configured = true;
         mapTagRecords();
         dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void addTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTagButtonActionPerformed
-        CIPTagRecord tagRecord = new CIPTagRecord();
+        StaticTagRecord tagRecord = new StaticTagRecord();
         currentRecord.tagRecords.add(tagRecord);
         buildTagRecord(tagRecord);
         revalidate();
@@ -165,11 +140,11 @@ public class CIPConfigFrame extends javax.swing.JFrame {
     {
         for (int i = 0; i < tagRecords.size(); i++)
         {
-            CIPTagRecord currentRecord = (CIPTagRecord)tagRecords.get(i);
+            StaticTagRecord currentRecord = (StaticTagRecord)tagRecords.get(i);
             buildTagRecord(currentRecord);
         }
     }
-    public void buildTagRecord(CIPTagRecord currentTagRecord)
+    public void buildTagRecord(StaticTagRecord currentTagRecord)
     {
         JPanel currentTagPane = new JPanel();
         java.awt.Component tagField;
@@ -192,21 +167,21 @@ public class CIPConfigFrame extends javax.swing.JFrame {
                 tagField = manager.getOutgoingRecordTags("");
             }
         }
-        JTextField cipTagField = new JTextField(10);
+        JTextField valueField = new JTextField(10);
         currentTagPane.add(tagField);
-        currentTagPane.add(cipTagField);
+        currentTagPane.add(valueField);
         JButton deleteButton = new JButton("Delete");
         currentTagPane.add(deleteButton);
         if (currentTagRecord.configured)
         {
-            cipTagField.setText(currentTagRecord.cipTag);
+            valueField.setText(currentTagRecord.getValue() + "");
         }
         tagRecordPane.add(currentTagPane);
         TagMapper tm = new TagMapper()
         {
-            public CIPTagRecord mapTagRecord()
+            public StaticTagRecord mapTagRecord()
             {
-                CIPTagRecord outputRecord = new CIPTagRecord();
+                StaticTagRecord outputRecord = new StaticTagRecord();
                 if (currentRecord.type == ProtocolRecord.RECORD_TYPE_INCOMING)
                 {
                     outputRecord.tag = ((JTextField)tagField).getText();
@@ -215,7 +190,7 @@ public class CIPConfigFrame extends javax.swing.JFrame {
                 {
                     outputRecord.tag = manager.getGuidFromIndex(((JComboBox)tagField).getSelectedIndex());
                 }
-                outputRecord.cipTag = cipTagField.getText();
+                outputRecord.setValue(Double.parseDouble(valueField.getText()));
                 outputRecord.configured = true;
                 return outputRecord;
             }
@@ -238,21 +213,16 @@ public class CIPConfigFrame extends javax.swing.JFrame {
    
     public interface TagMapper
     {
-        public CIPTagRecord mapTagRecord();
+        public StaticTagRecord mapTagRecord();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addTagButton;
     private javax.swing.JPanel addTagPane;
-    private javax.swing.JTextField cipHostField;
-    private javax.swing.JTextField cipSlotField;
-    private javax.swing.JPanel configPane;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel headerPane;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton okButton;

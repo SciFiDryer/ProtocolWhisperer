@@ -15,7 +15,7 @@
  */
 package protocolwhisperer.drivers;
 
-import protocolwhisperer.BridgeMappingRecord;
+import protocolwhisperer.*;
 
 /**
  *
@@ -27,5 +27,5 @@ public interface ProtocolHandler {
     public ProtocolRecord getNewProtocolRecord(int type, String calledMenuItem);
     public String[] getIncomingMenuNames();
     public String[] getOutgoingMenuNames();
-    public void configure(ProtocolRecord currentRecord);
+    public void configure(ProtocolRecord currentRecord, BridgeManager manager);
 }

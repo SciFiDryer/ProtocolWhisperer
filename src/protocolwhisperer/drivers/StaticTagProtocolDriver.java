@@ -14,33 +14,46 @@
  * limitations under the License.
  */
 package protocolwhisperer.drivers;
-import protocolwhisperer.*;
-import javax.swing.*;
-import java.awt.event.*;
+
+import etherip.EtherNetIP;
+import etherip.types.CIPData;
 import java.util.ArrayList;
+import java.util.Arrays;
+import protocolwhisperer.*;
 
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class CIPProtocolHandler implements ProtocolHandler{
-    String[] incomingMenuNames = new String[] {"CIP Read Tag"};
-    String[] outgoingMenuNames = new String[] {"CIP Write Tag"};
-    
-    public ProtocolRecord getNewProtocolRecord(int type, String calledMenuItem)
+public class StaticTagProtocolDriver extends ProtocolDriver{
+    boolean enabled = true;
+    public void setEnabled(boolean aEnabled)
     {
-        return new CIPProtocolRecord(type, calledMenuItem);
+        enabled = aEnabled;
     }
-    public String[] getIncomingMenuNames()
+    public boolean getEnabled()
     {
-        return incomingMenuNames;
+        return enabled;
     }
-    public String[] getOutgoingMenuNames()
+    public void getIncomingRecords()
     {
-        return outgoingMenuNames;
     }
-    public void configure(ProtocolRecord currentRecord, BridgeManager manager)
+    public void mapIncomingValues()
+    {   
+    }
+    public void shutdown()
     {
-        new CIPConfigFrame((CIPProtocolRecord)currentRecord, manager).setVisible(true);
+    }
+    public void sendOutgoingRecords()
+    {
+      
+    }
+    public Class getProtocolHandlerClass()
+    {
+        return StaticTagHandler.class;
+    }
+    public Class getProtocolRecordClass()
+    {
+        return StaticTagProtocolRecord.class;
     }
 }

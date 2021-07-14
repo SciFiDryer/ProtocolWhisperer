@@ -104,6 +104,7 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
         }
         driverList.add(new ModbusProtocolHandler());
         driverList.add(new CIPProtocolHandler());
+        driverList.add(new StaticTagHandler());
         ArrayList<String> menuItems = new ArrayList();
         ArrayList<String> outgoingMenuItems = new ArrayList();
         menuItems.add("Select");
@@ -160,7 +161,7 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
         {
             public void actionPerformed(ActionEvent e)
             {
-                currentHandler.configure(currentRecord);
+                currentHandler.configure(currentRecord, parentFrame.manager);
             }
         });
         JButton deleteButton = new JButton("Delete");
