@@ -36,8 +36,10 @@ public class BridgeManager{
     public ArrayList<ProtocolRecord> dataSourceRecords = new ArrayList();
     public ArrayList<BridgeEntryContainer> dataDestinationList = new ArrayList();
     public ArrayList<ProtocolRecord> dataDestinationRecords = new ArrayList();
+    public ArrayList<DatalogRecord> datalogRecords = new ArrayList();
     public BridgeOptions options = new BridgeOptions();
     ArrayList<ProtocolDriver> driverList = new ArrayList();
+    ArrayList<DatalogDriver> datalogDrivers = new ArrayList();
     boolean firstRun = true;
     int restTime = 1000;
     boolean isRunning = false;
@@ -136,9 +138,11 @@ public class BridgeManager{
             XMLDecoder xmld = new XMLDecoder(new FileInputStream(f));
             dataSourceRecords.clear();
             dataDestinationRecords.clear();
+            datalogRecords.clear();
             options = (BridgeOptions)xmld.readObject();
             dataSourceRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
             dataDestinationRecords = (ArrayList<ProtocolRecord>)xmld.readObject();
+            datalogRecords = (ArrayList<DatalogRecord>)xmld.readObject();
             xmld.close();
         }
         catch (Exception e)
@@ -173,6 +177,10 @@ public class BridgeManager{
     {
         return driverList;
     }
+    public ArrayList<DatalogDriver> getDatalogDrivers()
+    {
+        return datalogDrivers;
+    }
     public void runBridge()
     {
         if (firstRun)
@@ -193,6 +201,11 @@ public class BridgeManager{
                 ProtocolRecord pr = dataDestinationRecords.get(i);
                 processProtocolRecord(pr);
             }
+            for (int i = 0; i < datalogRecords.size(); i++)
+            {
+                DatalogRecord dr = datalogRecords.get(i);
+                processDatalogRecord(dr);
+            }
         }
         //get incoming values
         for (int i = 0; i < driverList.size(); i++)
@@ -202,6 +215,7 @@ public class BridgeManager{
             currentDriver.mapIncomingValues();
         }
         runScripting();
+        runDatalog();
         if (!headless)
         {
             javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel)bridgeFrame.valuesTable.getModel();
@@ -257,6 +271,14 @@ public class BridgeManager{
             }
         }
         firstRun = false;
+    }
+    public void runDatalog()
+    {
+        for (int i = 0; i < datalogDrivers.size(); i++)
+        {
+            DatalogDriver currentDriver = datalogDrivers.get(i);
+            currentDriver.logPoints();
+        }
     }
     public void runScripting()
     {
@@ -333,6 +355,11 @@ public class BridgeManager{
         {
             dmh.constructGuiRecord(dataDestinationRecords.get(i));
         }
+        bridgeFrame.datalogRecordPane.removeAll();
+        for (int i = 0; i < datalogRecords.size(); i++)
+        {
+            dmh.constructDatalogRecord(datalogRecords.get(i));
+        }
     }
     public void processProtocolRecord(ProtocolRecord currentRecord)
     {
@@ -342,6 +369,17 @@ public class BridgeManager{
             if (currentDriver.getProtocolRecordClass().isInstance(currentRecord))
             {
                 currentDriver.storeProtocolRecord(currentRecord);
+            }
+        }
+    }
+    public void processDatalogRecord(DatalogRecord currentRecord)
+    {
+        for (int i = 0; i < datalogDrivers.size(); i++)
+        {
+            DatalogDriver currentDriver = datalogDrivers.get(i);
+            if (currentDriver.getDatalogRecordClass().isInstance(currentRecord))
+            {
+                currentDriver.storeDatalogRecord(currentRecord);
             }
         }
     }

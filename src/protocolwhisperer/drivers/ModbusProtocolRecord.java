@@ -25,6 +25,7 @@ public class ModbusProtocolRecord extends ProtocolRecord {
     int protocolType = 0;
     public static int PROTOCOL_TYPE_SLAVE = 1;
     public static int PROTOCOL_TYPE_MASTER = 2;
+    public boolean individualCalls = false;
     public String slaveHost = null;
     public int slavePort = 502;
     public int node = 0;

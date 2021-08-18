@@ -35,15 +35,18 @@ public class MainFrame extends javax.swing.JFrame {
     JComboBox incomingDataSelector = null;
     JComboBox outgoingDataSelector = null;
     JComboBox tagSelectMenu = null;
+    JComboBox datalogSelector = null;
     public MainFrame(BridgeManager aManager) {
         manager = aManager;
         initComponents();
         tagSelectMenu = manager.getOutgoingRecordTags("");
         incomingDataSelector = new JComboBox();
         outgoingDataSelector = new JComboBox();
+        datalogSelector = new JComboBox();
         incomingDataSelectorPane.add(incomingDataSelector);
         outgoingDataSelectorPane.add(outgoingDataSelector);
-        protocolwhisperer.drivers.DriverMenuHandler dmh = new protocolwhisperer.drivers.DriverMenuHandler(incomingDataSelector, outgoingDataSelector, this);
+        datalogSelectorPane.add(datalogSelector);
+        protocolwhisperer.drivers.DriverMenuHandler dmh = new protocolwhisperer.drivers.DriverMenuHandler(incomingDataSelector, outgoingDataSelector, datalogSelector, this);
         manager.dmh = dmh;
     }
     public MainFrame()
@@ -69,19 +72,26 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         generalPane = new javax.swing.JPanel();
+        jPanel11 = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         startBridgeButton = new javax.swing.JButton();
-        jPanel7 = new javax.swing.JPanel();
-        enableRedundancy = new javax.swing.JCheckBox();
-        tagSelectPane = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        watchdogTimerField = new javax.swing.JTextField();
-        jLabel6 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         restIntervalField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        jPanel12 = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
+        enableRedundancy = new javax.swing.JCheckBox();
+        jPanel10 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        tagSelectPane = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        watchdogTimerField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
         incomingTabPane = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel2 = new javax.swing.JPanel();
@@ -100,6 +110,15 @@ public class MainFrame extends javax.swing.JFrame {
         addDataDestination = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         outgoingDataPane = new javax.swing.JPanel();
+        datalogPane = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        datalogParentPane = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        datalogSelectorPane = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        jPanel9 = new javax.swing.JPanel();
+        datalogRecordPane = new javax.swing.JPanel();
         scriptPane = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         scriptTextArea = new javax.swing.JTextArea();
@@ -127,6 +146,11 @@ public class MainFrame extends javax.swing.JFrame {
 
         generalPane.setLayout(new javax.swing.BoxLayout(generalPane, javax.swing.BoxLayout.Y_AXIS));
 
+        jLabel9.setText("Bridge control");
+        jPanel11.add(jLabel9);
+
+        generalPane.add(jPanel11);
+
         jPanel1.add(jSeparator1);
 
         startBridgeButton.setText("Start Bridge");
@@ -139,22 +163,6 @@ public class MainFrame extends javax.swing.JFrame {
 
         generalPane.add(jPanel1);
 
-        enableRedundancy.setText("Enable redundancy");
-        jPanel7.add(enableRedundancy);
-        jPanel7.add(tagSelectPane);
-
-        jLabel5.setText("Redundancy timer");
-        jPanel7.add(jLabel5);
-
-        watchdogTimerField.setColumns(4);
-        watchdogTimerField.setText("5000");
-        jPanel7.add(watchdogTimerField);
-
-        jLabel6.setText("ms");
-        jPanel7.add(jLabel6);
-
-        generalPane.add(jPanel7);
-
         jLabel2.setText("Rest interval");
         jPanel3.add(jLabel2);
 
@@ -166,6 +174,33 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel3.add(jLabel1);
 
         generalPane.add(jPanel3);
+        generalPane.add(jSeparator2);
+
+        jLabel10.setText("Redundancy options");
+        jPanel12.add(jLabel10);
+
+        generalPane.add(jPanel12);
+
+        enableRedundancy.setText("Enable redundancy");
+        jPanel7.add(enableRedundancy);
+
+        generalPane.add(jPanel7);
+
+        jLabel8.setText("Redundancy tag");
+        jPanel10.add(jLabel8);
+        jPanel10.add(tagSelectPane);
+
+        jLabel5.setText("Redundancy timer");
+        jPanel10.add(jLabel5);
+
+        watchdogTimerField.setColumns(4);
+        watchdogTimerField.setText("5000");
+        jPanel10.add(watchdogTimerField);
+
+        jLabel6.setText("ms");
+        jPanel10.add(jLabel6);
+
+        generalPane.add(jPanel10);
 
         jTabbedPane1.addTab("General", generalPane);
 
@@ -231,6 +266,37 @@ public class MainFrame extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Data Destinations", outgoingTabPane);
 
+        datalogPane.setLayout(new javax.swing.BoxLayout(datalogPane, javax.swing.BoxLayout.Y_AXIS));
+
+        datalogParentPane.setLayout(new javax.swing.BoxLayout(datalogParentPane, javax.swing.BoxLayout.Y_AXIS));
+
+        jLabel7.setText("Driver");
+        jPanel8.add(jLabel7);
+        jPanel8.add(datalogSelectorPane);
+
+        jButton1.setText("Add");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel8.add(jButton1);
+
+        datalogParentPane.add(jPanel8);
+
+        jPanel9.setLayout(new java.awt.BorderLayout());
+
+        datalogRecordPane.setLayout(new javax.swing.BoxLayout(datalogRecordPane, javax.swing.BoxLayout.Y_AXIS));
+        jPanel9.add(datalogRecordPane, java.awt.BorderLayout.NORTH);
+
+        datalogParentPane.add(jPanel9);
+
+        jScrollPane5.setViewportView(datalogParentPane);
+
+        datalogPane.add(jScrollPane5);
+
+        jTabbedPane1.addTab("Datalogging", datalogPane);
+
         scriptPane.setLayout(new javax.swing.BoxLayout(scriptPane, javax.swing.BoxLayout.LINE_AXIS));
 
         scriptTextArea.setColumns(20);
@@ -292,7 +358,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         setJMenuBar(jMenuBar1);
 
-        setBounds(0, 0, 838, 339);
+        setBounds(0, 0, 533, 339);
     }// </editor-fold>//GEN-END:initComponents
 
     public void updateBridgeOptions()
@@ -346,7 +412,7 @@ public class MainFrame extends javax.swing.JFrame {
         {
             java.io.File f = chooser.getSelectedFile();
             String filename = f.getName();
-            if (filename.length() > 4 && !filename.substring(filename.length()-4).equalsIgnoreCase(".cfg"))
+            if (filename.length() < 4 || !filename.substring(filename.length()-4).equalsIgnoreCase(".cfg"))
             {
                 f = new File(f.getParent() + File.separator + f.getName() + ".cfg");
             }
@@ -357,6 +423,7 @@ public class MainFrame extends javax.swing.JFrame {
                 xmle.writeObject(manager.options);
                 xmle.writeObject(manager.dataSourceRecords);
                 xmle.writeObject(manager.dataDestinationRecords);
+                xmle.writeObject(manager.datalogRecords);
                 xmle.close();
             }
             catch (Exception e)
@@ -418,6 +485,10 @@ public class MainFrame extends javax.swing.JFrame {
         manager.options.scriptContent = scriptTextArea.getText();
     }//GEN-LAST:event_scriptTextAreaKeyReleased
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        manager.dmh.addDatalogDriver(datalogSelector.getSelectedItem().toString());
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -426,32 +497,48 @@ public class MainFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDataDestination;
     private javax.swing.JButton addDataSource;
+    private javax.swing.JPanel datalogPane;
+    private javax.swing.JPanel datalogParentPane;
+    public javax.swing.JPanel datalogRecordPane;
+    private javax.swing.JPanel datalogSelectorPane;
     public javax.swing.JCheckBox enableRedundancy;
     private javax.swing.JPanel generalPane;
     public javax.swing.JPanel incomingDataPane;
     public javax.swing.JPanel incomingDataParent;
     private javax.swing.JPanel incomingDataSelectorPane;
     private javax.swing.JPanel incomingTabPane;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JMenuItem loadConfig;
     public javax.swing.JPanel outgoingDataPane;

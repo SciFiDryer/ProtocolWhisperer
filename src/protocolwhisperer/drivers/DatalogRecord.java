@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package protocolwhisperer;
+package protocolwhisperer.drivers;
+import java.util.*;
 
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class BridgeOptions {
-    public boolean redundancyEnabled = false;
-    public String watchdogGuid = "";
-    public int redundancyTimeout = 5000;
-    public String scriptContent = "";
+public abstract class DatalogRecord {
+    public ArrayList<DatalogPoint> points = new ArrayList();
+    public int logInterval = 0;
+    public String selectedItem = "";
+    public boolean configured = false;
+    public abstract Class getDatalogHandlerClass();
 }

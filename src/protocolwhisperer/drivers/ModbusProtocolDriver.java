@@ -263,8 +263,7 @@ public class ModbusProtocolDriver extends ProtocolDriver{
     }
     public void addToModbusList(ArrayList<ModbusHostRecord> currentList, ModbusProtocolRecord currentRecord)
     {
-        
-        if (currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_MASTER)
+        if (!currentRecord.individualCalls && currentRecord.protocolType == ModbusProtocolRecord.PROTOCOL_TYPE_MASTER)
         {
             ModbusHostRecord newHostRecord = new ModbusHostRecord(ModbusHostRecord.HOST_TYPE_REMOTE_SLAVE, currentRecord.slaveHost, currentRecord.slavePort, currentRecord.node);
             for (int j = 0; j < currentRecord.tagRecords.size(); j++)
@@ -314,6 +313,70 @@ public class ModbusProtocolDriver extends ProtocolDriver{
     }
     public void fetchIncomingData()
     {
+        for (int i = 0; i < recordList.size(); i++)
+        {
+            ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)recordList.get(i);
+            if (currentRecord.individualCalls)
+            {
+                ModbusMaster master = null;
+                try
+                {
+                    TcpParameters tcpParameters = new TcpParameters();
+                    tcpParameters.setHost(InetAddress.getByName(currentRecord.slaveHost));
+                    tcpParameters.setKeepAlive(true);
+                    tcpParameters.setPort(currentRecord.slavePort);
+                    //this should work but somehow doesn't
+                    //tcpParameters.setConnectionTimeout(3000);
+                    if (ProtocolWhisperer.debug)
+                    {
+                        System.out.println("Connecting to slave " + currentRecord.slaveHost + " on port " + currentRecord.slavePort);
+                    }
+                    master = ModbusMasterFactory.createModbusMasterTCP(tcpParameters);
+                    master.setResponseTimeout(5000);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                for (int j = 0; j < currentRecord.tagRecords.size(); j++)
+                {
+                    ModbusTagRecord currentTag = (ModbusTagRecord)currentRecord.tagRecords.get(j);
+                    try
+                    {
+                        ModbusResponse response = generateModbusMessage(master, 0, 1, currentRecord.node, currentTag.functionCode, currentTag.startingRegister, currentTag.quantity, null);
+                        if (response != null)
+                        {
+                            if (currentTag.functionCode == 3 || currentTag.functionCode == 4)
+                            {
+                                byte[] buf = ((ReadHoldingRegistersResponse)(response)).getBytes();
+                                currentTag.rawValue = buf;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        if (ProtocolWhisperer.debug)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (master != null)
+                    {
+                        try
+                        {
+                            master.disconnect();
+                        }
+                        catch (Exception e)
+                        {
+                            if (ProtocolWhisperer.debug)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
         for (int i = 0; i < incomingSlaveList.size(); i++)
         {
             ModbusHostRecord currentSlave = incomingSlaveList.get(i);
@@ -453,7 +516,7 @@ public class ModbusProtocolDriver extends ProtocolDriver{
         for (int i = 0; i < recordList.size(); i++)
         {
             ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)recordList.get(i);
-            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_INCOMING)
+            if (!currentRecord.individualCalls && currentRecord.getType() == ProtocolRecord.RECORD_TYPE_INCOMING)
             {
                 for (int j = 0; j < currentRecord.tagRecords.size(); j++)
                 {

@@ -48,6 +48,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
             }
             portField.setText(currentRecord.slavePort + "");
             idField.setText(currentRecord.node + "");
+            individualCallsCheckbox.setSelected(currentRecord.individualCalls);
             buildTagRecords(currentRecord.tagRecords);
             
         }
@@ -83,7 +84,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
                 tagField = manager.getOutgoingRecordTags("");
             }
         }
-        JComboBox functionCodeSelector = new JComboBox(new String[] {"Select register type", "Holding registers", "InputRegisters"});
+        JComboBox functionCodeSelector = new JComboBox(new String[] {"Select register type", "Holding registers", "Input Registers"});
         JTextField registerField = new JTextField(4);
         JComboBox dataTypeSelector = new JComboBox();
         JCheckBox wordSwapCheckbox = new JCheckBox("Word swap");
@@ -173,6 +174,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
         portField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         idField = new javax.swing.JTextField();
+        individualCallsCheckbox = new javax.swing.JCheckBox();
         addTagPane = new javax.swing.JPanel();
         addTagButton = new javax.swing.JButton();
         headerPane = new javax.swing.JPanel();
@@ -217,6 +219,9 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
         idField.setText("1");
         idField.setToolTipText("");
         configPane.add(idField);
+
+        individualCallsCheckbox.setText("Individual Modbus calls");
+        configPane.add(individualCallsCheckbox);
 
         layoutPane.add(configPane);
 
@@ -278,6 +283,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
         currentRecord.slaveHost = hostIpField.getText();
         currentRecord.slavePort = Integer.parseInt(portField.getText());
         currentRecord.node = Integer.parseInt(idField.getText());
+        currentRecord.individualCalls = individualCallsCheckbox.isSelected();
         currentRecord.configured = true;
         mapTagRecords();
         dispose();
@@ -312,6 +318,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
     private javax.swing.JTextField hostIpField;
     private javax.swing.JLabel hostIpLabel;
     private javax.swing.JTextField idField;
+    private javax.swing.JCheckBox individualCallsCheckbox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

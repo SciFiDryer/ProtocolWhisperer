@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package protocolwhisperer;
-
+package protocolwhisperer.drivers;
+import protocolwhisperer.drivers.*;
+import protocolwhisperer.*;
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class BridgeOptions {
-    public boolean redundancyEnabled = false;
-    public String watchdogGuid = "";
-    public int redundancyTimeout = 5000;
-    public String scriptContent = "";
+public abstract class DatalogHandler {
+    public abstract String[] getMenuNames();
+    public abstract DatalogRecord getNewDatalogRecord(String selectedItem);
+    public abstract void configure(DatalogRecord currentRecord, BridgeManager manager);
 }

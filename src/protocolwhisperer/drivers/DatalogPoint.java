@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package protocolwhisperer;
+package protocolwhisperer.drivers;
 
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
  */
-public class BridgeOptions {
-    public boolean redundancyEnabled = false;
-    public String watchdogGuid = "";
-    public int redundancyTimeout = 5000;
-    public String scriptContent = "";
+public class DatalogPoint {
+    public TagRecord tagRecord = null;
+    public long lastLogged = 0;
+    public boolean configured = false;
+    public transient int pointId = 0;
+    public DatalogPoint()
+    {
+        
+    }
+    public DatalogPoint(TagRecord aTagRecord)
+    {
+        tagRecord = aTagRecord;
+        configured = true;
+    }
 }
