@@ -22,6 +22,7 @@ import java.io.*;
 import java.net.*;
 import protocolwhisperer.*;
 import java.sql.*;
+import java.net.*;
 /**
  *
  * @author Matt Jamesson <scifidryer@gmail.com>
@@ -33,7 +34,6 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     JComboBox datalogSelector = null;
     MainFrame parentFrame = null;
     BridgeEntryContainer parentEntryContainer = null;
-    ArrayList<ProtocolHandler> driverList = new ArrayList();
     ArrayList<DatalogHandler> datalogHandlers = new ArrayList();
     JPanel outgoingPanel = null;
     JPanel incomingDataSettings = null;
@@ -42,10 +42,6 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     {
         
     }
-    public ArrayList<ProtocolHandler> getDriverList()
-    {
-        return driverList;
-    }
     public DriverMenuHandler(JComboBox aIncomingDataSelector, JComboBox aOutgoingDataSelector, JComboBox aDatalogSelector, MainFrame aParentFrame)
     {
         incomingDataSelector = aIncomingDataSelector;
@@ -53,75 +49,23 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
         parentFrame = aParentFrame;
         datalogSelector = aDatalogSelector;
         
-        loadDrivers();
-        loadDatalogDrivers();
+        loadDriverNames();
+        loadDatalogDriverNames();
     }
-    public void loadDrivers()
+    public void loadDriverNames()
     {
-        try
-        {
-        
-            File workingDir = new File(DriverMenuHandler.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-            if (workingDir.isFile() || workingDir.getPath().endsWith(".jar"))
-            {
-                workingDir = new File(workingDir.getParent());
-            }
-            File pluginDir = new File(workingDir.getPath() + File.separator + "plugins");
-            
-            if (pluginDir.exists() && pluginDir.isDirectory())
-            {
-                File[] fileList = pluginDir.listFiles();
-                URL[] jarList = new URL[fileList.length];
-                for (int i = 0; i < fileList.length; i++)
-                {
-                    jarList[i] = fileList[i].toURI().toURL();
-                }
-                URLClassLoader classLoader = new URLClassLoader(jarList, ClassLoader.getSystemClassLoader());
-                Thread.currentThread().setContextClassLoader(classLoader);
-            }
-        }
-        catch (Exception e)
-        {
-            if (ProtocolWhisperer.debug)
-            {
-                e.printStackTrace();
-            }
-        }
-        ServiceLoader<ProtocolDriver> driverLoader = ServiceLoader.load(ProtocolDriver.class);
-        Iterator drivers = driverLoader.iterator();
-        while (drivers.hasNext())
-        {
-            try
-            {
-                ProtocolDriver currentDriver = (ProtocolDriver)drivers.next();
-                parentFrame.manager.getDriverList().add(currentDriver);
-                ProtocolHandler currentHandler = (ProtocolHandler)currentDriver.getProtocolHandlerClass().getDeclaredConstructor().newInstance();
-                driverList.add(currentHandler);
-            }
-            catch(Exception e)
-            {
-                if (ProtocolWhisperer.debug)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        
-        driverList.add(new ModbusProtocolHandler());
-        driverList.add(new CIPProtocolHandler());
-        driverList.add(new StaticTagHandler());
         ArrayList<String> menuItems = new ArrayList();
         ArrayList<String> outgoingMenuItems = new ArrayList();
         menuItems.add("Select");
         outgoingMenuItems.add("Select");
-        for (int i = 0; i < driverList.size(); i++)
+        for (int i = 0; i < parentFrame.manager.getHandlerList().size(); i++)
         {
-            String[] menuNames = driverList.get(i).getIncomingMenuNames();
+            String[] menuNames = parentFrame.manager.getHandlerList().get(i).getIncomingMenuNames();
             for (int j = 0; j < menuNames.length; j++)
             {
                 menuItems.add(menuNames[j]);
             }
-            menuNames = driverList.get(i).getOutgoingMenuNames();
+            menuNames = parentFrame.manager.getHandlerList().get(i).getOutgoingMenuNames();
             for (int j = 0; j < menuNames.length; j++)
             {
                 outgoingMenuItems.add(menuNames[j]);
@@ -132,26 +76,9 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
         DefaultComboBoxModel outgoingModel = new DefaultComboBoxModel(outgoingMenuItems.toArray());
         outgoingDataSelector.setModel(outgoingModel);
     }
-    public void loadDatalogDrivers()
+    public void loadDatalogDriverNames()
     {
-        ServiceLoader<Driver> jdbcLoader = ServiceLoader.load(Driver.class);
-        Iterator drivers = jdbcLoader.iterator();
-        while (drivers.hasNext())
-        {
-            try
-            {
-                Driver loadedDriver = (Driver)drivers.next();
-                DriverManager.registerDriver(new DriverBroker(loadedDriver));
-            }
-            catch(Exception e)
-            {
-                if (ProtocolWhisperer.debug)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        parentFrame.manager.getDatalogDrivers().add(new SQLDatalogDriver());
+        
         for (int i = 0; i < parentFrame.manager.getDatalogDrivers().size(); i++)
         {
             try
@@ -293,9 +220,9 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     }
     public ProtocolHandler getProtocolHandler(String selectedItem)
     {
-        for (int i = 0; i < driverList.size(); i++)
+        for (int i = 0; i < parentFrame.manager.getHandlerList().size(); i++)
         {
-            ProtocolHandler currentHandler = driverList.get(i);
+            ProtocolHandler currentHandler = parentFrame.manager.getHandlerList().get(i);
             String[] menuNames = currentHandler.getIncomingMenuNames();
             
             for (int j = 0; j < menuNames.length; j++)
@@ -318,9 +245,9 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
     }
     public ProtocolHandler getProtocolHandler(Class handlerClass)
     {
-        for (int i = 0; i < driverList.size(); i++)
+        for (int i = 0; i < parentFrame.manager.getHandlerList().size(); i++)
         {
-            ProtocolHandler currentHandler = driverList.get(i);
+            ProtocolHandler currentHandler = parentFrame.manager.getHandlerList().get(i);
             if (handlerClass.isInstance(currentHandler))
             {
                 return currentHandler;
@@ -348,42 +275,6 @@ public class DriverMenuHandler implements ActionListener, java.io.Serializable{
         DatalogRecord currentRecord = currentHandler.getNewDatalogRecord(selectedItem);
         parentFrame.manager.datalogRecords.add(currentRecord);
         constructDatalogRecord(currentRecord);
-    }
-    class DriverBroker implements Driver
-    {
-        Driver driver = null;
-        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException
-        {
-            return this.driver.getParentLogger();
-        }
-        public DriverBroker(Driver aDriver)
-        {
-            this.driver = aDriver;
-        }
-        public boolean acceptsURL(String u) throws SQLException
-        {
-		return this.driver.acceptsURL(u);
-	}
-	public Connection connect(String s, Properties prop) throws SQLException
-        {
-		return this.driver.connect(s, prop);
-	}
-	public int getMajorVersion()
-        {
-		return this.driver.getMajorVersion();
-	}
-	public int getMinorVersion()
-        {
-		return this.driver.getMinorVersion();
-	}
-	public DriverPropertyInfo[] getPropertyInfo(String s, Properties prop) throws SQLException
-        {
-		return this.driver.getPropertyInfo(s, prop);
-	}
-	public boolean jdbcCompliant()
-        {
-		return this.driver.jdbcCompliant();
-	}
     }
 }
 

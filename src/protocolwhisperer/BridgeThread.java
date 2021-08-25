@@ -28,12 +28,16 @@ public class BridgeThread extends Thread{
     public synchronized void run()
     {
         manager.isRunning = true;
+        if (ProtocolWhisperer.debug)
+        {
+            System.out.println("Starting Data Acquisition thread");
+        }
         while (manager.isRunning)
         {
             try
             {
                 manager.runBridge();
-                wait(manager.restTime);
+                wait(manager.options.restInterval);
             }
             catch (InterruptedException e)
             {
@@ -42,6 +46,10 @@ public class BridgeThread extends Thread{
                     e.printStackTrace();
                 }
             }
+        }
+        if (ProtocolWhisperer.debug)
+        {
+            System.out.println("Data Acquisition thread stopped");
         }
     }
 }

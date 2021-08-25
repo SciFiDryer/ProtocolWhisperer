@@ -22,7 +22,8 @@ import com.intelligt.modbus.jlibmodbus.msg.response.*;
 import com.intelligt.modbus.jlibmodbus.tcp.TcpParameters;
 import java.beans.XMLDecoder;
 import java.io.*;
-import java.net.InetAddress;
+import java.net.*;
+import java.sql.*;
 import java.util.*;
 import javax.swing.*;
 import javax.script.*;
@@ -40,6 +41,7 @@ public class BridgeManager{
     public BridgeOptions options = new BridgeOptions();
     ArrayList<ProtocolDriver> driverList = new ArrayList();
     ArrayList<DatalogDriver> datalogDrivers = new ArrayList();
+    ArrayList<ProtocolHandler> handlerList = new ArrayList();
     boolean firstRun = true;
     int restTime = 1000;
     boolean isRunning = false;
@@ -48,9 +50,15 @@ public class BridgeManager{
     MainFrame bridgeFrame = null;
     boolean headless = false;
     long redundancyTimerStart = 0;
+    public URLClassLoader classLoader = null;
     public BridgeManager(boolean aHeadless, String fileName)
     {
         headless = aHeadless;
+        driverList.add(new ModbusProtocolDriver());
+        driverList.add(new CIPProtocolDriver());
+        driverList.add(new StaticTagProtocolDriver());
+        loadDrivers();
+        loadDatalogDrivers();
         if (!headless)
         {
             try
@@ -80,11 +88,9 @@ public class BridgeManager{
             {
                 java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
-            bridgeFrame = new MainFrame(this);
+            bridgeFrame = new MainFrame(this, classLoader);
             bridgeFrame.setVisible(true);
         }
-        driverList.add(new ModbusProtocolDriver());
-        driverList.add(new CIPProtocolDriver());
         if (headless)
         {
             loadConfig(new File(fileName));
@@ -177,6 +183,10 @@ public class BridgeManager{
     {
         return driverList;
     }
+    public ArrayList<ProtocolHandler> getHandlerList()
+    {
+        return handlerList;
+    }
     public ArrayList<DatalogDriver> getDatalogDrivers()
     {
         return datalogDrivers;
@@ -215,7 +225,6 @@ public class BridgeManager{
             currentDriver.mapIncomingValues();
         }
         runScripting();
-        runDatalog();
         if (!headless)
         {
             javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel)bridgeFrame.valuesTable.getModel();
@@ -339,6 +348,7 @@ public class BridgeManager{
     public void restoreGuiFromFile()
     {
         bridgeFrame.enableRedundancy.setSelected(options.redundancyEnabled);
+        bridgeFrame.restIntervalField.setText(options.restInterval + "");
         bridgeFrame.tagSelectMenu = getOutgoingRecordTags(options.watchdogGuid);
         bridgeFrame.scriptTextArea.setText(options.scriptContent);
         bridgeFrame.tagSelectPane.removeAll();
@@ -385,9 +395,9 @@ public class BridgeManager{
     }
     public ProtocolHandler getHandlerForDriver(String driverSelection)
     {
-        for (int i = 0; i < dmh.getDriverList().size(); i++)
+        for (int i = 0; i < handlerList.size(); i++)
         {
-            ProtocolHandler currentHandler = dmh.getDriverList().get(i);
+            ProtocolHandler currentHandler = handlerList.get(i);
             String[] menuNames = currentHandler.getIncomingMenuNames();
             for (int j = 0; j < menuNames.length; j++)
             {
@@ -407,10 +417,41 @@ public class BridgeManager{
         }
         return null;
     }
+    public class DatalogThread extends Thread
+    {
+        public synchronized void run()
+        {
+            isRunning = true;
+            if (ProtocolWhisperer.debug)
+            {
+                System.out.println("Starting Datalog thread");
+            }
+            while (isRunning)
+            {
+                try
+                {
+                    runDatalog();
+                    wait(1000);
+                }
+                catch (InterruptedException e)
+                {
+                    if (protocolwhisperer.ProtocolWhisperer.debug)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            if (ProtocolWhisperer.debug)
+            {
+                System.out.println("Datalog thread stopped");
+            }
+        }
+    }
     public void startBridge()
     {
         bridgeThread = new BridgeThread(this);
         bridgeThread.start();
+        new DatalogThread().start();
     }
     public void shutdown()
     {
@@ -421,5 +462,127 @@ public class BridgeManager{
         {
             driverList.get(i).shutdown();
         }
-    }  
+    }
+    public void loadDrivers()
+    {
+        try
+        {
+            File workingDir = new File(DriverMenuHandler.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+            if (workingDir.isFile() || workingDir.getPath().endsWith(".jar"))
+            {
+                workingDir = new File(workingDir.getParent());
+            }
+            File pluginDir = new File(URLDecoder.decode(workingDir.getPath(), "UTF-8") + File.separator + "plugins");
+            if (pluginDir.exists() && pluginDir.isDirectory())
+            {
+                File[] fileList = pluginDir.listFiles();
+                URL[] jarList = new URL[fileList.length];
+                for (int i = 0; i < fileList.length; i++)
+                {
+                    jarList[i] = fileList[i].toURI().toURL();
+                }
+                URLClassLoader classLoader = new URLClassLoader(jarList, ClassLoader.getSystemClassLoader());
+                Thread.currentThread().setContextClassLoader(classLoader);
+            }
+        }
+        catch (Exception e)
+        {
+            if (ProtocolWhisperer.debug)
+            {
+                e.printStackTrace();
+            }
+        }
+        //add builtin handlers
+        for (int i = 0; i < driverList.size(); i++)
+        {
+            try
+            {
+                handlerList.add((ProtocolHandler)driverList.get(i).getProtocolHandlerClass().getDeclaredConstructor().newInstance());
+            }
+            catch(Exception e)
+            {
+                if (ProtocolWhisperer.debug)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        ServiceLoader<ProtocolDriver> driverLoader = ServiceLoader.load(ProtocolDriver.class);
+        Iterator drivers = driverLoader.iterator();
+        while (drivers.hasNext())
+        {
+            try
+            {
+                ProtocolDriver currentDriver = (ProtocolDriver)drivers.next();
+                driverList.add(currentDriver);
+                ProtocolHandler currentHandler = (ProtocolHandler)currentDriver.getProtocolHandlerClass().getDeclaredConstructor().newInstance();
+                handlerList.add(currentHandler);
+            }
+            catch(Exception e)
+            {
+                if (ProtocolWhisperer.debug)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public void loadDatalogDrivers()
+    {
+        ServiceLoader<Driver> jdbcLoader = ServiceLoader.load(Driver.class);
+        Iterator drivers = jdbcLoader.iterator();
+        while (drivers.hasNext())
+        {
+            try
+            {
+                Driver loadedDriver = (Driver)drivers.next();
+                DriverManager.registerDriver(new DriverBroker(loadedDriver));
+            }
+            catch(Exception e)
+            {
+                if (ProtocolWhisperer.debug)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        datalogDrivers.add(new SQLDatalogDriver());
+    }
+    class DriverBroker implements Driver
+    {
+        Driver driver = null;
+        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException
+        {
+            return this.driver.getParentLogger();
+        }
+        public DriverBroker(Driver aDriver)
+        {
+            this.driver = aDriver;
+        }
+        public boolean acceptsURL(String u) throws SQLException
+        {
+		return this.driver.acceptsURL(u);
+	}
+	public Connection connect(String s, Properties prop) throws SQLException
+        {
+		return this.driver.connect(s, prop);
+	}
+	public int getMajorVersion()
+        {
+		return this.driver.getMajorVersion();
+	}
+	public int getMinorVersion()
+        {
+		return this.driver.getMinorVersion();
+	}
+	public DriverPropertyInfo[] getPropertyInfo(String s, Properties prop) throws SQLException
+        {
+		return this.driver.getPropertyInfo(s, prop);
+	}
+	public boolean jdbcCompliant()
+        {
+		return this.driver.jdbcCompliant();
+	}
+    }
 }
+

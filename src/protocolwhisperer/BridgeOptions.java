@@ -24,4 +24,5 @@ public class BridgeOptions {
     public String watchdogGuid = "";
     public int redundancyTimeout = 5000;
     public String scriptContent = "";
+    public int restInterval = 1000;
 }

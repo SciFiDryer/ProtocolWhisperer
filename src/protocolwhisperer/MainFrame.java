@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.io.*;
 import javax.swing.filechooser.*;
 import java.beans.*;
+import java.net.*;
 
 /**
  *
@@ -36,8 +37,10 @@ public class MainFrame extends javax.swing.JFrame {
     JComboBox outgoingDataSelector = null;
     JComboBox tagSelectMenu = null;
     JComboBox datalogSelector = null;
-    public MainFrame(BridgeManager aManager) {
+    public URLClassLoader classLoader = null;
+    public MainFrame(BridgeManager aManager, URLClassLoader aClassLoader) {
         manager = aManager;
+        classLoader = aClassLoader;
         initComponents();
         tagSelectMenu = manager.getOutgoingRecordTags("");
         incomingDataSelector = new JComboBox();
@@ -168,6 +171,11 @@ public class MainFrame extends javax.swing.JFrame {
 
         restIntervalField.setColumns(4);
         restIntervalField.setText("1000");
+        restIntervalField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restIntervalFieldActionPerformed(evt);
+            }
+        });
         jPanel3.add(restIntervalField);
 
         jLabel1.setText("ms");
@@ -369,13 +377,14 @@ public class MainFrame extends javax.swing.JFrame {
             manager.options.redundancyTimeout = Integer.parseInt(watchdogTimerField.getText());
             manager.options.watchdogGuid = manager.getGuidFromIndex(tagSelectMenu.getSelectedIndex());
         }
+        manager.options.restInterval = Integer.parseInt(restIntervalField.getText());
     }
     private void startBridgeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBridgeButtonActionPerformed
         if (!manager.isRunning)
         {
             try
             {
-                manager.restTime = Integer.parseInt(restIntervalField.getText());
+                manager.options.restInterval = Integer.parseInt(restIntervalField.getText());
                 updateBridgeOptions();
             }
             catch (Exception e)
@@ -384,7 +393,7 @@ public class MainFrame extends javax.swing.JFrame {
                 {
                     e.printStackTrace();
                 }
-                manager.restTime = 1000;
+                manager.options.restInterval = 1000;
             }
             manager.startBridge();
             startBridgeButton.setText("Stop bridge");
@@ -437,6 +446,10 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_saveConfigActionPerformed
 
     private void loadConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadConfigActionPerformed
+        if (classLoader != null)
+        {
+            Thread.currentThread().setContextClassLoader(classLoader);
+        }
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("CFG file", "cfg");
         chooser.setFileFilter(filter);
@@ -488,6 +501,10 @@ public class MainFrame extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         manager.dmh.addDatalogDriver(datalogSelector.getSelectedItem().toString());
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void restIntervalFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restIntervalFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_restIntervalFieldActionPerformed
 
     /**
      * @param args the command line arguments
@@ -545,7 +562,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel outgoingDataPaneParent;
     private javax.swing.JPanel outgoingDataSelectorPane;
     private javax.swing.JPanel outgoingTabPane;
-    private javax.swing.JTextField restIntervalField;
+    public javax.swing.JTextField restIntervalField;
     private javax.swing.JMenuItem saveConfig;
     private javax.swing.JPanel scriptPane;
     public javax.swing.JTextArea scriptTextArea;

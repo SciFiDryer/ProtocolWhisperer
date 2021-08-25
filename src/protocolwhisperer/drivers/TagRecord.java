@@ -28,7 +28,10 @@ public abstract class TagRecord {
         public String guid = "";
         public TagRecord()
         {
-            guid = UUID.randomUUID().toString();
+            if (guid.equals(""))
+            {
+                guid = UUID.randomUUID().toString();
+            }
         }
 }
     
