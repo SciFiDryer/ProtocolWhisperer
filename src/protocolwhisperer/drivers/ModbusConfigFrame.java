@@ -124,7 +124,7 @@ public class ModbusConfigFrame extends javax.swing.JFrame {
                 }
                 else
                 {
-                    outputRecord.tag = manager.getGuidFromIndex(((JComboBox)(tagField)).getSelectedIndex());
+                    outputRecord.tag = ((JComboBox)(tagField)).getSelectedItem().toString();
                 }
                 outputRecord.startingRegister = Integer.parseInt(registerField.getText());
                 outputRecord.formatType = ModbusProtocolHandler.getFormatFromMenuItem(dataTypeSelector.getSelectedItem().toString());

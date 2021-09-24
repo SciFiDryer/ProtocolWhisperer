@@ -55,9 +55,7 @@ public class ModbusProtocolDriver extends ProtocolDriver{
     }
     public void driverInit()
     {
-        recordList.clear();
-        incomingSlaveList.clear();
-        outgoingSlaveList.clear();
+
     }
     public Class getProtocolRecordClass()
     {
@@ -199,7 +197,6 @@ public class ModbusProtocolDriver extends ProtocolDriver{
         {
             addToModbusList(incomingSlaveList, currentRecord);
         }
-        
     }
     public void updateOutgoingSlaves()
     {
@@ -207,7 +204,7 @@ public class ModbusProtocolDriver extends ProtocolDriver{
         for (int i = 0; i < recordList.size(); i++)
         {
             ModbusProtocolRecord currentRecord = (ModbusProtocolRecord)recordList.get(i);
-            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_OUTGOING)
+            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_OUTGOING && currentRecord.recordChanged)
             {
                 addToModbusList(outgoingSlaveList, currentRecord);
             }
@@ -348,8 +345,13 @@ public class ModbusProtocolDriver extends ProtocolDriver{
                         {
                             if (currentTag.functionCode == 3 || currentTag.functionCode == 4)
                             {
+                                double oldValue = currentTag.getValue();
                                 byte[] buf = ((ReadHoldingRegistersResponse)(response)).getBytes();
                                 currentTag.rawValue = buf;
+                                if (currentTag.getValue() != oldValue)
+                                {
+                                    currentTag.lastChangedTime = System.currentTimeMillis();
+                                }
                             }
                         }
                     }
@@ -521,7 +523,12 @@ public class ModbusProtocolDriver extends ProtocolDriver{
                 for (int j = 0; j < currentRecord.tagRecords.size(); j++)
                 {
                     ModbusTagRecord currentTag = (ModbusTagRecord)currentRecord.tagRecords.get(j);
+                    double oldValue = currentTag.getValue();
                     currentTag.rawValue = getModbusValue(currentRecord.slaveHost, currentRecord.slavePort, currentTag.functionCode, currentTag.startingRegister, currentTag.quantity);
+                    if (currentTag.getValue() != oldValue)
+                    {
+                        currentTag.lastChangedTime = System.currentTimeMillis();
+                    }
                 }
             }
         }
@@ -720,6 +727,9 @@ public class ModbusProtocolDriver extends ProtocolDriver{
                 }
             }
         }
+        incomingSlaveList.clear();
+        outgoingSlaveList.clear();
+        super.shutdown();
     }
     public Class getProtocolHandlerClass()
     {

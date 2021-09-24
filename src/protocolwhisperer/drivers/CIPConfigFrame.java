@@ -213,7 +213,7 @@ public class CIPConfigFrame extends javax.swing.JFrame {
                 }
                 else
                 {
-                    outputRecord.tag = manager.getGuidFromIndex(((JComboBox)tagField).getSelectedIndex());
+                    outputRecord.tag = ((JComboBox)tagField).getSelectedItem().toString();
                 }
                 outputRecord.cipTag = cipTagField.getText();
                 outputRecord.configured = true;

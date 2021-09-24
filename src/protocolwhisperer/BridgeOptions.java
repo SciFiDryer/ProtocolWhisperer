@@ -21,7 +21,7 @@ package protocolwhisperer;
  */
 public class BridgeOptions {
     public boolean redundancyEnabled = false;
-    public String watchdogGuid = "";
+    public String watchdogTag = "";
     public int redundancyTimeout = 5000;
     public String scriptContent = "";
     public int restInterval = 1000;

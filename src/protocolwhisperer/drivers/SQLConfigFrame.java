@@ -81,7 +81,7 @@ public class SQLConfigFrame extends javax.swing.JFrame {
         final java.awt.Component tagField;
         if (currentPoint.configured)
         {
-            tagField = manager.getOutgoingRecordTags(currentPoint.tagRecord.guid);
+            tagField = manager.getOutgoingRecordTags(currentPoint.tagRecord.tag);
         }
         else
         {
@@ -95,8 +95,8 @@ public class SQLConfigFrame extends javax.swing.JFrame {
             public DatalogPoint mapPointRecord()
             {
                 
-                String targetGuid = manager.getGuidFromIndex(((JComboBox)(tagField)).getSelectedIndex());
-                DatalogPoint point = new DatalogPoint(manager.getIncomingRecordByGuid(targetGuid));
+                String targetTag = ((JComboBox)(tagField)).getSelectedItem().toString();
+                DatalogPoint point = new DatalogPoint(manager.getIncomingRecordByTag(targetTag));
                 return point;
             }
         };

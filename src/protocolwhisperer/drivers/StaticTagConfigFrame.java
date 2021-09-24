@@ -188,7 +188,7 @@ public class StaticTagConfigFrame extends javax.swing.JFrame {
                 }
                 else
                 {
-                    outputRecord.tag = manager.getGuidFromIndex(((JComboBox)tagField).getSelectedIndex());
+                    outputRecord.tag = ((JComboBox)tagField).getSelectedItem().toString();
                 }
                 outputRecord.setValue(Double.parseDouble(valueField.getText()));
                 outputRecord.configured = true;

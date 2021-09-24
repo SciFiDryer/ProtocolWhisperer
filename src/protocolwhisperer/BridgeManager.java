@@ -97,7 +97,7 @@ public class BridgeManager{
             startBridge();
         }
     }
-    public JComboBox getOutgoingRecordTags(String selectedGuid)
+    public JComboBox getOutgoingRecordTags(String selectedTag)
     {
         ArrayList<String> menu = new ArrayList();
         int selectedIndex = 0;
@@ -107,7 +107,7 @@ public class BridgeManager{
             for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
                 menu.add(currentRecord.tagRecords.get(j).tag);
-                if (selectedGuid.equals(currentRecord.tagRecords.get(j).guid))
+                if (selectedTag.equals(currentRecord.tagRecords.get(j).tag))
                 {
                     selectedIndex = menu.size() - 1;
                 }
@@ -120,7 +120,7 @@ public class BridgeManager{
         }
         return menuBox;
     }
-    public String getGuidFromIndex(int index)
+    /*public String getGuidFromIndex(int index)
     {
         int counter = 0;
         for (int i = 0; i < dataSourceRecords.size(); i++)
@@ -136,7 +136,7 @@ public class BridgeManager{
             }
         }
         return "";
-    }
+    }*/
     public void loadConfig(File f)
     {
         try
@@ -196,11 +196,7 @@ public class BridgeManager{
         if (firstRun)
         {
             //do first run init and build respective protocol record lists
-            for (int i = 0; i < driverList.size(); i++)
-            {
-                ProtocolDriver currentDriver = driverList.get(i);
-                currentDriver.driverInit();
-            }
+
             for (int i = 0; i < dataSourceRecords.size(); i++)
             {
                 ProtocolRecord pr = dataSourceRecords.get(i);
@@ -210,6 +206,11 @@ public class BridgeManager{
             {
                 ProtocolRecord pr = dataDestinationRecords.get(i);
                 processProtocolRecord(pr);
+            }
+            for (int i = 0; i < driverList.size(); i++)
+            {
+                ProtocolDriver currentDriver = driverList.get(i);
+                currentDriver.driverInit();
             }
             for (int i = 0; i < datalogRecords.size(); i++)
             {
@@ -245,11 +246,10 @@ public class BridgeManager{
         //check if redundancy watchdog has elapsed
         if (options.redundancyEnabled)
         {
-            if (getIncomingRecordByGuid(options.watchdogGuid).getValue() == 1)
+            if (getIncomingRecordByTag(options.watchdogTag).getValue() == 1)
             {
                 if (redundancyTimerStart == 0)
                 {
-                    System.out.println("Redundancy timeout started");
                     redundancyTimerStart = System.currentTimeMillis();
                 }
             }
@@ -263,15 +263,22 @@ public class BridgeManager{
             for (int i = 0; i < dataDestinationRecords.size(); i++)
             {
                 ProtocolRecord currentRecord = dataDestinationRecords.get(i);
+                boolean recordChanged = false;
                 for (int j = 0; j < currentRecord.tagRecords.size(); j++)
                 {
                     TagRecord currentTagRecord = currentRecord.tagRecords.get(j);
-                    TagRecord incomingRecord = getIncomingRecordByGuid(currentTagRecord.tag);
+                    TagRecord incomingRecord = getIncomingRecordByTag(currentTagRecord.tag);
                     if (incomingRecord != null)
                     {
+                        if (currentTagRecord.lastChangedTime == 0 || currentTagRecord.lastChangedTime != incomingRecord.lastChangedTime)
+                        {
+                            recordChanged = true;
+                        }
+                        currentTagRecord.lastChangedTime = incomingRecord.lastChangedTime;
                         currentTagRecord.setValue(incomingRecord.getValue());
                     }
                 }
+                currentRecord.recordChanged = recordChanged;
             }
             for (int i = 0; i < driverList.size(); i++)
             {
@@ -330,14 +337,14 @@ public class BridgeManager{
             }
         }
     }
-    public TagRecord getIncomingRecordByGuid(String guid)
+    public TagRecord getIncomingRecordByTag(String tag)
     {
         for (int i = 0; i < dataSourceRecords.size(); i++)
         {
             ProtocolRecord currentRecord = dataSourceRecords.get(i);
             for (int j = 0; j < currentRecord.tagRecords.size(); j++)
             {
-                if (currentRecord.tagRecords.get(j).guid.equals(guid))
+                if (currentRecord.tagRecords.get(j).tag.equals(tag))
                 {
                     return currentRecord.tagRecords.get(j);
                 }
@@ -349,7 +356,7 @@ public class BridgeManager{
     {
         bridgeFrame.enableRedundancy.setSelected(options.redundancyEnabled);
         bridgeFrame.restIntervalField.setText(options.restInterval + "");
-        bridgeFrame.tagSelectMenu = getOutgoingRecordTags(options.watchdogGuid);
+        bridgeFrame.tagSelectMenu = getOutgoingRecordTags(options.watchdogTag);
         bridgeFrame.scriptTextArea.setText(options.scriptContent);
         bridgeFrame.tagSelectPane.removeAll();
         bridgeFrame.tagSelectPane.add(bridgeFrame.tagSelectMenu);

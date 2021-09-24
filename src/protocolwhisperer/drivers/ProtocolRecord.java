@@ -26,6 +26,7 @@ public abstract class ProtocolRecord {
     int type = 0;
     public String selectedItem = "";
     public boolean configured = false;
+    public boolean recordChanged = false;
     public ArrayList<TagRecord> tagRecords = new ArrayList<TagRecord>();
     public int getType()
     {

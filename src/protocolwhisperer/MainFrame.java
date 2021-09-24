@@ -375,7 +375,7 @@ public class MainFrame extends javax.swing.JFrame {
         if (manager.options.redundancyEnabled)
         {
             manager.options.redundancyTimeout = Integer.parseInt(watchdogTimerField.getText());
-            manager.options.watchdogGuid = manager.getGuidFromIndex(tagSelectMenu.getSelectedIndex());
+            manager.options.watchdogTag = tagSelectMenu.getSelectedItem().toString();
         }
         manager.options.restInterval = Integer.parseInt(restIntervalField.getText());
     }
@@ -489,7 +489,7 @@ public class MainFrame extends javax.swing.JFrame {
         if (jTabbedPane1.getSelectedComponent() == generalPane)
         {
             tagSelectPane.removeAll();
-            tagSelectMenu = manager.getOutgoingRecordTags(manager.options.watchdogGuid);
+            tagSelectMenu = manager.getOutgoingRecordTags(manager.options.watchdogTag);
             tagSelectPane.add(tagSelectMenu);
         }
     }//GEN-LAST:event_jTabbedPane1StateChanged

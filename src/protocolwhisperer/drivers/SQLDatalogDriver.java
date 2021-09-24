@@ -72,11 +72,11 @@ public class SQLDatalogDriver extends DatalogDriver {
             Statement statement = connection.createStatement();
             if (currentRecord.driverName.equals("sqlite"))
             {
-                statement.execute("CREATE TABLE IF NOT EXISTS points ( name VARCHAR(30) NOT NULL , pointid INTEGER PRIMARY KEY , guid VARCHAR(36) NOT NULL);");
+                statement.execute("CREATE TABLE IF NOT EXISTS points ( tag VARCHAR(30) NOT NULL , pointid INTEGER PRIMARY KEY );");
             }
             else
             {
-                statement.execute("CREATE TABLE IF NOT EXISTS points ( name VARCHAR(30) NOT NULL , pointid INT NOT NULL AUTO_INCREMENT , guid VARCHAR(36) NOT NULL , PRIMARY KEY (pointid))");
+                statement.execute("CREATE TABLE IF NOT EXISTS points ( tag VARCHAR(30) NOT NULL , pointid INT NOT NULL AUTO_INCREMENT , PRIMARY KEY (pointid))");
             }
             String indexFlag = ", INDEX (pointid)";
             if (currentRecord.driverName.equals("sqlite"))
@@ -110,16 +110,15 @@ public class SQLDatalogDriver extends DatalogDriver {
                     {
                         if (point.pointId == 0)
                         {
-                            ResultSet rs = statement.executeQuery("SELECT pointid FROM points WHERE guid = \"" + point.tagRecord.guid + "\";");
+                            ResultSet rs = statement.executeQuery("SELECT pointid FROM points WHERE tag = \"" + point.tagRecord.tag + "\";");
                             if (rs.next())
                             {
                                 point.pointId = rs.getInt(1);
-                                statement.execute("UPDATE points SET name=\"" + point.tagRecord.tag + "\" WHERE guid=\"" + point.tagRecord.guid + "\";");
                             }
                             else
                             {
-                                statement.execute("INSERT INTO points (name, guid) VALUES (\"" + point.tagRecord.tag + "\", \"" + point.tagRecord.guid + "\");");
-                                rs = statement.executeQuery("SELECT pointid FROM points WHERE guid = \"" + point.tagRecord.guid + "\";");
+                                statement.execute("INSERT INTO points (tag) VALUES (\"" + point.tagRecord.tag + "\");");
+                                rs = statement.executeQuery("SELECT pointid FROM points WHERE tag = \"" + point.tagRecord.tag + "\";");
                                 if (rs.next())
                                 {
                                     point.pointId = rs.getInt(1);

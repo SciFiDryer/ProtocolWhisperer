@@ -25,13 +25,10 @@ public abstract class TagRecord {
         public boolean configured = false;
         public abstract void setValue(double value);
         public abstract double getValue();
-        public String guid = "";
+        public long lastChangedTime = 0;
         public TagRecord()
         {
-            if (guid.equals(""))
-            {
-                guid = UUID.randomUUID().toString();
-            }
+
         }
 }
     

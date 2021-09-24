@@ -22,11 +22,17 @@ import java.util.*;
  */
 public abstract class ProtocolDriver {
     protected ArrayList<ProtocolRecord> recordList = new ArrayList<ProtocolRecord>();
-    public abstract boolean getEnabled();
-    public abstract void setEnabled(boolean enabled); 
+    boolean enabled = true;
+    public boolean getEnabled()
+    {
+        return enabled;
+    }
+    public void setEnabled(boolean aEnabled)
+    {
+        enabled = aEnabled;
+    }
     public void driverInit()
     {
-        recordList.clear();
     }
     public abstract void getIncomingRecords();
     public abstract void sendOutgoingRecords();

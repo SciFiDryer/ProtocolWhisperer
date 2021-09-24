@@ -28,10 +28,6 @@ import protocolwhisperer.*;
 public class CIPProtocolDriver extends ProtocolDriver{
     boolean enabled = true;
 
-    public void driverInit()
-    {
-        recordList.clear();
-    }
     public void setEnabled(boolean aEnabled)
     {
         enabled = aEnabled;
@@ -56,7 +52,13 @@ public class CIPProtocolDriver extends ProtocolDriver{
             controller.close();
             for (int i = 0; i < values.length; i++)
             {
-                currentRecord.tagRecords.get(i).setValue(values[i].getNumber(0).doubleValue());
+                TagRecord currentTagRecord = currentRecord.tagRecords.get(i);
+                double oldValue = currentTagRecord.getValue();
+                currentTagRecord.setValue(values[i].getNumber(0).doubleValue());
+                if (oldValue != currentTagRecord.getValue())
+                {
+                    currentTagRecord.lastChangedTime = System.currentTimeMillis();
+                }
             }
         }
         catch (Exception e)
@@ -80,21 +82,22 @@ public class CIPProtocolDriver extends ProtocolDriver{
             {
                 CIPRead(currentRecord);
             }
-            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_OUTGOING)
-            {
-                CIPWriteTags(currentRecord);
-            }
         }
     }
     public void mapIncomingValues()
     {   
     }
-    public void shutdown()
-    {
-    }
+
     public void sendOutgoingRecords()
     {
-      
+        for (int i = 0; i < recordList.size(); i++)
+        {
+            CIPProtocolRecord currentRecord = (CIPProtocolRecord)recordList.get(i);
+            if (currentRecord.getType() == ProtocolRecord.RECORD_TYPE_OUTGOING && currentRecord.recordChanged)
+            {
+                CIPWriteTags(currentRecord);
+            }
+        }
     }
     public void CIPWriteTags(CIPProtocolRecord currentRecord)
     {
