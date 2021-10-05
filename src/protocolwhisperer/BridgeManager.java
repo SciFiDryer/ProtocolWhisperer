@@ -56,6 +56,7 @@ public class BridgeManager{
         headless = aHeadless;
         driverList.add(new ModbusProtocolDriver());
         driverList.add(new CIPProtocolDriver());
+        driverList.add(new DriveParameterProtocolDriver());
         driverList.add(new StaticTagProtocolDriver());
         loadDrivers();
         loadDatalogDrivers();
