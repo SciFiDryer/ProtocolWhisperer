@@ -35,12 +35,12 @@ This is a NetBeans project. It can be built by pulling it in the NetBeans IDE or
 
 ## Latest release
 
-[ProtocolWhisperer.v0.3.zip](https://github.com/SciFiDryer/ProtocolWhisperer/releases/download/v0.3/ProtocolWhisperer.v0.3.zip)
+[ProtocolWhisperer.v0.4.zip](https://github.com/SciFiDryer/ProtocolWhisperer/releases/download/v0.4/ProtocolWhisperer.v0.4.zip)
 
 ## Completed features and planned features
 
 - [x] Protocol conversion
 - [x] Plugins for other protocols
-- [ ] Data logger
+- [x] Data logger
 - [ ] Visual trending of data
 - [x] Scripting of collected data
