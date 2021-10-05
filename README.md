@@ -29,6 +29,10 @@ https://github.com/kochedykov/jlibmodbus
 
 https://github.com/EPICSTools/etherip
 
+## Logging data with JDBC plugins
+
+The currently supported datalog drivers are sqlite and MySQL. To use them, download the appropriate JDBC jar file and put it in the plugins folder. The next time ProtocolWhisperer is launched, you will see an option for it in datalogging.
+
 ## Building from source
 
 This is a NetBeans project. It can be built by pulling it in the NetBeans IDE or manually compiling. The project requires the JLibModbus and EtherIP jars.
